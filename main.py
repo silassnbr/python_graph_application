@@ -3,12 +3,18 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import nltk
 import os
+from nltk.chunk import ne_chunk
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 nltk.download('punkt')
-from nltk.tokenize import sent_tokenize
-
+nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
 from tkinter import Label, Tk, Button, filedialog,messagebox
 # dosya seçme fonksiyonu 
+ozel_isimler = []
 def dosya_bul():
     root = Tk()
     root.withdraw()
@@ -27,13 +33,14 @@ def node_olustur(dosya_yolu):
         G = nx.Graph()
         cumleler = dosya_icerigi.split(".")
 
-    for i in range(len(cumleler)):
+    for i in range(len(cumleler)-1):
         G.add_node(cumleler[i],label=cumleler[i])
 
-    for i in range(len(cumleler) - 1):
+    for i in range(len(cumleler) - 2):
         G.add_edge(cumleler[i],cumleler[i+1])
-
-
+    for i in range(len(cumleler)-1):
+        ozel_isim_skor(cumleler[i])
+    messagebox.showinfo("",ozel_isimler)
     nx.draw(G, with_labels=True)
     plt.show()
 
@@ -44,7 +51,22 @@ def txt_kontrol(dosya_yolu):
         return True
     else:
         return False
+def ozel_isim_skor(metin):
+    
+    kelimeler = word_tokenize(metin)
+    
+    # Kelimeleri etiketle
+    etiketler = pos_tag(kelimeler)
+    chunklar = ne_chunk(etiketler)
+    sayi=0
+    
+    for etiket in etiketler:
+        kelime, pos_etiketi = etiket
+        if pos_etiketi == 'NNP': 
+            sayi+=1 # Özel isim etiketi 'NNP'
+    ozel_isimler.append(sayi)
 
+    return ozel_isimler
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
