@@ -8,7 +8,7 @@ from nltk.tokenize import sent_tokenize
 
 from tkinter import Label, Tk, Button, filedialog
 
-def dosya_sec():
+def dosya_bul():
     root = Tk()
     root.withdraw()
     dosya_yolu = filedialog.askopenfilename()
@@ -34,8 +34,11 @@ def dosya_sec():
 # Ana pencereyi oluştur
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
-etiket = Label(root, text="LÜTFEN DOSYA SEÇİNİZ",anchor='w')
-etiket.pack()
+root.configure(bg="#C88EA7")
+yaziboyutu=("Arial",16)
+etiket = Label(root, text="LÜTFEN DOSYA SEÇİNİZ",font=yaziboyutu,fg="#643843",anchor='w')
+etiket.pack(pady=20)
+etiket.configure(bg="#C88EA7")
 # Pencere boyutunu ayarla
 pencere_genislik = 800
 pencere_yukseklik = 600
@@ -45,8 +48,9 @@ x_konumu = int((ekran_genislik - pencere_genislik) / 2)
 y_konumu = int((ekran_yukseklik - pencere_yukseklik) / 2)
 root.geometry(f"{pencere_genislik}x{pencere_yukseklik}+{x_konumu}+{y_konumu}")
 # Dosya seçme düğmesini oluştur
-buton = Button(root, text="Dosya Seç", command=dosya_sec)
+buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton.pack(pady=10)
+buton.configure(bg="#99627A")
 
 # Uygulamayı başlat
 root.mainloop()
