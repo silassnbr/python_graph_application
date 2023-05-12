@@ -2,35 +2,46 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt
 import nltk
+import os
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 
-from tkinter import Label, Tk, Button, filedialog
+from tkinter import Label, Tk, Button, filedialog,messagebox
 
 def dosya_bul():
     root = Tk()
     root.withdraw()
     dosya_yolu = filedialog.askopenfilename()
     if dosya_yolu:
-        with open(dosya_yolu, 'r') as f:
-            dosya_icerigi = f.read()
-            G = nx.Graph()
-            cumleler = dosya_icerigi.split(".")
+        if txt_kontrol(dosya_yolu):
 
-        for i in range(len(cumleler)):
-            G.add_node(cumleler[i],label=cumleler[i])
+            with open(dosya_yolu, 'r') as f:
+                dosya_icerigi = f.read()
+                G = nx.Graph()
+                cumleler = dosya_icerigi.split(".")
 
-        for i in range(len(cumleler) - 1):
-            G.add_edge(cumleler[i],cumleler[i+1])
+            for i in range(len(cumleler)):
+                G.add_node(cumleler[i],label=cumleler[i])
+
+            for i in range(len(cumleler) - 1):
+                G.add_edge(cumleler[i],cumleler[i+1])
 
 
-        nx.draw(G, with_labels=True)
-        plt.show()
-
+            nx.draw(G, with_labels=True)
+            plt.show()
+        else:
+            messagebox.showinfo("UYARI","Lütfen txt formatında bir dosya seçiniz")
     else:
-        print("Dosya seçilmedi.")
+        messagebox.showinfo("UYARI","Dosya Seçilemedi")
 
+
+def txt_kontrol(dosya_yolu):
+    dosya_uzantısı=os.path.splitext(dosya_yolu)[1]
+    if dosya_uzantısı.lower()==".txt":
+        return True
+    else:
+        return False
 # Ana pencereyi oluştur
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
