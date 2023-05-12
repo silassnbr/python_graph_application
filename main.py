@@ -16,10 +16,12 @@ from tkinter import Label, Tk, Button, filedialog,messagebox
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 def dosya_bul():
+    
     root = Tk()
     root.withdraw()
     dosya_yolu = filedialog.askopenfilename()
     if dosya_yolu:
+        ozel_isimler.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -40,7 +42,8 @@ def node_olustur(dosya_yolu):
         G.add_edge(cumleler[i],cumleler[i+1])
     for i in range(len(cumleler)-1):
         ozel_isim_skor(cumleler[i])
-    messagebox.showinfo("",ozel_isimler)
+    label_sayi.config(text=f"Özel İsim Sayısı: {ozel_isimler}")
+    
     nx.draw(G, with_labels=True)
     plt.show()
 
@@ -51,11 +54,11 @@ def txt_kontrol(dosya_yolu):
         return True
     else:
         return False
+#özel isim sayısı bulma
 def ozel_isim_skor(metin):
     
     kelimeler = word_tokenize(metin)
     
-    # Kelimeleri etiketle
     etiketler = pos_tag(kelimeler)
     chunklar = ne_chunk(etiketler)
     sayi=0
@@ -63,10 +66,11 @@ def ozel_isim_skor(metin):
     for etiket in etiketler:
         kelime, pos_etiketi = etiket
         if pos_etiketi == 'NNP': 
-            sayi+=1 # Özel isim etiketi 'NNP'
+            sayi+=1 
     ozel_isimler.append(sayi)
 
     return ozel_isimler
+
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
@@ -87,6 +91,8 @@ buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,
 buton.pack(pady=10)
 buton.configure(bg="#99627A")
 
+label_sayi = Label(root, text="")
+label_sayi.pack(pady=10)
 root.mainloop()
 
 
