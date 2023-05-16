@@ -17,6 +17,7 @@ import re
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
+cumle_uz=[]
 def dosya_bul():
     
     root = Tk()
@@ -25,6 +26,7 @@ def dosya_bul():
     if dosya_yolu:
         ozel_isimler.clear()
         sayilar.clear()
+        cumle_uz.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -46,11 +48,17 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         ozel_isim_skor(cumleler[i])
         numerikSayisi(cumleler[i])
-    label_sayiOzel.config(text=f"Özel İsim Sayısı: {ozel_isimler}")
+        cumleUzunlugu(cumleler[i])
+
+    label_sayiOzel.config(text=f"Özel İsim sayısı: {ozel_isimler}")
     label_sayi.config(text=f"Numerik: {sayilar}")
+    labelCumleUz.config(text=f"Cümle uzunluklari:{cumle_uz}")
+
     nx.draw(G, with_labels=True)
     plt.show()
-
+def cumleUzunlugu(cumle):
+    s=cumle.split()
+    cumle_uz.append(len(s))
 # dosyanın txt olup omadığını kontrol eden fonksiyon
 def txt_kontrol(dosya_yolu):
     dosya_uzantısı=os.path.splitext(dosya_yolu)[1]
@@ -105,6 +113,10 @@ label_sayiOzel.configure(bg="#C88EA7")
 label_sayi = Label(root, text="",fg="#643843")
 label_sayi.pack(pady=10)
 label_sayi.configure(bg="#C88EA7")
+
+labelCumleUz = Label(root, text="",fg="#643843")
+labelCumleUz.pack(pady=10)
+labelCumleUz.configure(bg="#C88EA7")
 root.mainloop()
 
 
