@@ -22,6 +22,7 @@ import string
 ozel_isimler = []
 sayilar=[]
 cumle_uz=[]
+kelimesay=[]
 skor_ozel=[]
 skor_numerik=[]
 duzenlenmisCumleler=[]
@@ -36,6 +37,7 @@ def dosya_bul():
         skor_ozel.clear()
         skor_numerik.clear()
         duzenlenmisCumleler.clear()
+        kelimesay.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -48,12 +50,12 @@ def node_olustur(dosya_yolu):
         dosya_icerigi = f.read()
         satirlar=dosya_icerigi.split('\n')
         baslik=satirlar[0].strip()
-        content = '\n'.join(satirlar[1:]).strip()
+        metin = '\n'.join(satirlar[1:]).strip()
         print(baslik)
         print("11111111111111111111111111111111")
         #Metin noktaya göre ayırılıp diziye atanır.
         G = nx.Graph()
-        cumleler = content.split(".")
+        cumleler = metin.split(".")
     # graph olustruma kısmı DÜZENLENECEK###############################
     for i in range(len(cumleler)-1):
         G.add_node(cumleler[i],label=cumleler[i])
@@ -61,21 +63,34 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler) - 2):
         G.add_edge(cumleler[i],cumleler[i+1])
     #########################
+    basliktakiKelimeler=baslik.lower().split()
     for i in range(len(cumleler)-1):
         ozel_isimSay(cumleler[i])
         numerikSayisi(cumleler[i])
         cumleUzunlugu(cumleler[i])
         skorDonustur(ozel_isimler[i],cumle_uz[i],sayilar[i])
+
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
+    for i in range(len(cumleler)-1):
+        baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
+
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
-    labelCumleUz.config(text=f"{duzenlenmisCumleler}")
+    labelCumleUz.config(text=f"{kelimesay}")
     for a in range(len(duzenlenmisCumleler)-1):
         print(duzenlenmisCumleler[a])
     nx.draw(G, with_labels=True)
     plt.show()
-
+def baslikKelimeBul(cuumle,kelimeler,cumleUz):
+    a=0
+    words = cuumle.lower().split()
+    
+    for word in words:
+        if word in kelimeler:
+            a += 1
+    a=round(float(a/cumleUz),3)
+    kelimesay.append(a)
 def nltkAsdimlari(duzenle):
     stemmer = PorterStemmer() 
     
