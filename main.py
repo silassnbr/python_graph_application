@@ -44,11 +44,16 @@ def dosya_bul():
         messagebox.showinfo("UYARI","Dosya Seçilemedi")
 #node oluşturma fonksiyonu
 def node_olustur(dosya_yolu):
-    with open(dosya_yolu, 'r') as f:
+    with open(dosya_yolu, encoding="utf8") as f:
         dosya_icerigi = f.read()
+        satirlar=dosya_icerigi.split('\n')
+        baslik=satirlar[0].strip()
+        content = '\n'.join(satirlar[1:]).strip()
+        print(baslik)
+        print("11111111111111111111111111111111")
         #Metin noktaya göre ayırılıp diziye atanır.
         G = nx.Graph()
-        cumleler = dosya_icerigi.split(".")
+        cumleler = content.split(".")
     # graph olustruma kısmı DÜZENLENECEK###############################
     for i in range(len(cumleler)-1):
         G.add_node(cumleler[i],label=cumleler[i])
@@ -94,7 +99,7 @@ def nltkAsdimlari(duzenle):
     stemmed_sentence = ' '.join(stemmed_tokens)
     
     duzenlenmisCumleler.append(stemmed_sentence)
-    
+
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
