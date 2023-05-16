@@ -90,13 +90,11 @@ def nltkAsdimlari(duzenle):
 
 
     duzenlenmis = sent_tokenize(filtered_sentence)
-    stemmed_tokens = [stemmer.stem(token) for token in filtered_sentence]  # Her kelimeye stemming işlemi uygulayın
+    stemmed_tokens = [stemmer.stem(token) for token in duzenlenmis]  # Her kelimeye stemming işlemi uygulayın
     stemmed_sentence = ' '.join(stemmed_tokens)
-
     
-
+    duzenlenmisCumleler.append(stemmed_sentence)
     
-    duzenlenmisCumleler.append(filtered_sentence)
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
