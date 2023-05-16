@@ -18,6 +18,8 @@ import re
 ozel_isimler = []
 sayilar=[]
 cumle_uz=[]
+skor_ozel=[]
+skor_numerik=[]
 def dosya_bul():
     
     root = Tk()
@@ -27,6 +29,7 @@ def dosya_bul():
         ozel_isimler.clear()
         sayilar.clear()
         cumle_uz.clear()
+        skor_ozel.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -49,13 +52,18 @@ def node_olustur(dosya_yolu):
         ozel_isim_skor(cumleler[i])
         numerikSayisi(cumleler[i])
         cumleUzunlugu(cumleler[i])
-
-    label_sayiOzel.config(text=f"Özel İsim sayısı: {ozel_isimler}")
-    label_sayi.config(text=f"Numerik: {sayilar}")
-    labelCumleUz.config(text=f"Cümle uzunluklari:{cumle_uz}")
+        skorDonustur(ozel_isimler[i],cumle_uz[i],sayilar[i])
+    label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
+    label_sayi.config(text=f"Numerik skor: {skor_numerik}")
+    labelCumleUz.config(text=f"Cumle uz:{cumle_uz}")
 
     nx.draw(G, with_labels=True)
     plt.show()
+def skorDonustur(ozel,cumle,numer):
+    a=round(float(ozel/cumle),3)
+    skor_ozel.append(a)
+    b=round(float(numer/cumle),3)
+    skor_numerik.append(b)
 def cumleUzunlugu(cumle):
     s=cumle.split()
     cumle_uz.append(len(s))
