@@ -10,18 +10,22 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
+from nltk.corpus import stopwords
 from tkinter import Label, Tk, Button, filedialog,messagebox
 import re
+import string
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
 cumle_uz=[]
 skor_ozel=[]
 skor_numerik=[]
+duzenlenmisCumleler=[]
 def dosya_bul():
-    
     root = Tk()
     root.withdraw()
     dosya_yolu = filedialog.askopenfilename()
@@ -30,6 +34,8 @@ def dosya_bul():
         sayilar.clear()
         cumle_uz.clear()
         skor_ozel.clear()
+        skor_numerik.clear()
+        duzenlenmisCumleler.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -40,25 +46,57 @@ def dosya_bul():
 def node_olustur(dosya_yolu):
     with open(dosya_yolu, 'r') as f:
         dosya_icerigi = f.read()
+        #Metin noktaya göre ayırılıp diziye atanır.
         G = nx.Graph()
         cumleler = dosya_icerigi.split(".")
-
+    # graph olustruma kısmı DÜZENLENECEK###############################
     for i in range(len(cumleler)-1):
         G.add_node(cumleler[i],label=cumleler[i])
 
     for i in range(len(cumleler) - 2):
         G.add_edge(cumleler[i],cumleler[i+1])
+    #########################
     for i in range(len(cumleler)-1):
-        ozel_isim_skor(cumleler[i])
+        ozel_isimSay(cumleler[i])
         numerikSayisi(cumleler[i])
         cumleUzunlugu(cumleler[i])
         skorDonustur(ozel_isimler[i],cumle_uz[i],sayilar[i])
+    for i in range(len(cumleler)-1):
+        nltkAsdimlari(cumleler[i])
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
-    labelCumleUz.config(text=f"Cumle uz:{cumle_uz}")
-
+    labelCumleUz.config(text=f"{duzenlenmisCumleler}")
+    for a in range(len(duzenlenmisCumleler)-1):
+        print(duzenlenmisCumleler[a])
     nx.draw(G, with_labels=True)
     plt.show()
+
+def nltkAsdimlari(duzenle):
+    stemmer = PorterStemmer() 
+    
+    punctuation = string.punctuation
+    # Cümleyi punctuation içindeki karakterlere göre bölerek kelimelere ayırın
+    # tokensPunc = duzenle.split()
+    # Noktalama işaretleri olmayan kelimeleri filtreleyin
+    punct_sentence = ''.join(char for char in duzenle if char not in punctuation)
+    # Filtrelenmiş kelimeleri birleştirerek cümleyi oluşturun
+    # punct_sentence = ' '.join(punct_tokens)
+    
+    
+    stop_words = set(stopwords.words("english"))  # İngilizce stop words'leri yükleyin
+    stop_tokens = word_tokenize(punct_sentence)  # Cümleyi kelimelere ayırın
+    filtered_tokens = [token for token in stop_tokens if token.lower() not in stop_words]  # Stop words olmayan kelimeleri filtreleyin
+    filtered_sentence = ' '.join(filtered_tokens) 
+
+
+    duzenlenmis = sent_tokenize(filtered_sentence)
+    stemmed_tokens = [stemmer.stem(token) for token in filtered_sentence]  # Her kelimeye stemming işlemi uygulayın
+    stemmed_sentence = ' '.join(stemmed_tokens)
+
+    
+
+    
+    duzenlenmisCumleler.append(filtered_sentence)
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
@@ -75,14 +113,11 @@ def txt_kontrol(dosya_yolu):
     else:
         return False
 #özel isim sayısı bulma
-def ozel_isim_skor(metin):
-    
+def ozel_isimSay(metin):
     kelimeler = word_tokenize(metin)
-    
     etiketler = pos_tag(kelimeler)
     chunklar = ne_chunk(etiketler)
     sayi=0
-    
     for etiket in etiketler:
         kelime, pos_etiketi = etiket
         if pos_etiketi == 'NNP': 
