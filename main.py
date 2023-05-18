@@ -5,11 +5,11 @@ import nltk
 import os
 from nltk.chunk import ne_chunk
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('maxent_ne_chunker')
+# nltk.download('words')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
@@ -20,6 +20,10 @@ import re
 import string
 import torch
 from transformers import BertTokenizer, BertModel
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from gensim.models import KeyedVectors
+
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -77,6 +81,7 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
     # bertAlgoritmasi(duzenlenmisCumleler)
+    gloveDeneme()
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
     labelCumleUz.config(text=f"{kelimesay}")
@@ -86,6 +91,45 @@ def node_olustur(dosya_yolu):
     
     nx.draw(G, with_labels=True)
     plt.show()
+def gloveDeneme():
+    glove_model = KeyedVectors.load('model.bin')
+    sentences = [
+    "read book.",
+    "I like this.",
+    "I read book.",
+    "I love this."
+    ]
+
+    # Cümlelerin vektörlerini tutmak için bir liste oluşturun
+    sentence_vectors = []
+
+    # Her cümle için vektörleri hesaplayın ve listeye ekleyin
+    for sentence in sentences:
+    # Cümleyi kelimelere ayırın
+        words = sentence.lower().split()
+        # for word in words:
+        #     if word in glove_model.vocab:
+        #         vectors = [glove_model.get_vector(word) for word in words]
+        #     else:
+        #         continue
+
+    # Her kelimenin vektörünü alın
+        vectors = [glove_model.get_vector(word) for word in words]
+    
+    # Kelime vektörlerini ortalama alarak cümle vektörünü elde edin
+        sentence_vector = sum(vectors) / len(vectors)
+    
+    # Cümle vektörünü listeye ekleyin
+        sentence_vectors.append(sentence_vector)
+
+# Cümleler arasındaki benzerlikleri hesaplayın
+    for i in range(len(sentences)):
+        for j in range(i+1, len(sentences)):
+            similarity = cosine_similarity([sentence_vectors[i]], [sentence_vectors[j]])[0][0]
+            print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
+
+
+
 def baslikKelimeBul(cuumle,kelimeler,cumleUz):
     a=0
     words = cuumle.lower().split()
