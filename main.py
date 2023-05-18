@@ -18,6 +18,8 @@ from nltk.corpus import stopwords
 from tkinter import Label, Tk, Button, filedialog,messagebox
 import re
 import string
+import torch
+from transformers import BertTokenizer, BertModel
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -74,12 +76,14 @@ def node_olustur(dosya_yolu):
         nltkAsdimlari(cumleler[i])
     for i in range(len(cumleler)-1):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
-
+    # bertAlgoritmasi(duzenlenmisCumleler)
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
     labelCumleUz.config(text=f"{kelimesay}")
-    for a in range(len(duzenlenmisCumleler)-1):
-        print(duzenlenmisCumleler[a])
+    # for a in range(len(duzenlenmisCumleler)-1):
+    #     print(duzenlenmisCumleler[a])
+
+    
     nx.draw(G, with_labels=True)
     plt.show()
 def baslikKelimeBul(cuumle,kelimeler,cumleUz):
@@ -114,7 +118,22 @@ def nltkAsdimlari(duzenle):
     stemmed_sentence = ' '.join(stemmed_tokens)
     
     duzenlenmisCumleler.append(stemmed_sentence)
+def bertAlgoritmasi(duzenlenmis):
+    modelAdi = 'bert-base-uncased'
+    tokenizer = BertTokenizer.from_pretrained(modelAdi)
+    model = BertModel.from_pretrained(modelAdi)
 
+    input_ids = tokenizer.batch_encode_plus(duzenlenmis, add_special_tokens=True, padding=True, truncation=True, return_tensors='pt')
+    outputs = model(**input_ids)
+    last_hidden_states = outputs.last_hidden_state
+    pooled_output = outputs.pooler_output
+
+    similarity_scores = torch.cosine_similarity(pooled_output[0], pooled_output[1:], dim=0)
+    i=0
+    for i, score in enumerate(similarity_scores):
+        print("Cümle {}: {}".format(i+1, duzenlenmis[i]))
+        print("Benzerlik skoru: {:.4f}".format(score.item()))
+        print()
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
