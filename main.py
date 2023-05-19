@@ -81,7 +81,7 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
     # bertAlgoritmasi(duzenlenmisCumleler)
-    gloveDeneme()
+    gloveDeneme(duzenlenmisCumleler)
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
     labelCumleUz.config(text=f"{kelimesay}")
@@ -91,40 +91,38 @@ def node_olustur(dosya_yolu):
     
     nx.draw(G, with_labels=True)
     plt.show()
-def gloveDeneme():
+def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
-    sentences = [
-    "read book.",
-    "I like banana.",
-    "I read book.",
-    "I read book."
-    ]
+    
     olmayan_vektor = np.zeros(shape=(glove_model.vector_size,), dtype=np.float32)  
     # Cümlelerin vektörlerini tutmak için bir liste oluşturun
     sentence_vectors = []
     vectors=[]
     # Her cümle için vektörleri hesaplayın ve listeye ekleyin
-    for sentence in sentences:
+    for sentence in cumlelerSon:
     # Cümleyi kelimelere ayırın
         words = sentence.lower().split()
         for word in words:
             if word in glove_model.key_to_index:
                 vectors.append(glove_model.get_vector(word))
             else:
-                vectors.append(olmayan_vektor)
+                similar_word = glove_model.most_similar(word)[0][0]
+                similar_vector = glove_model.get_vector(similar_word)
+                vectors.append(similar_vector)
+                
 
     # # Her kelimenin vektörünü alın
     #     vectors = [glove_model.get_vector(word) for word in words]
     
     # Kelime vektörlerini ortalama alarak cümle vektörünü elde edin
-        sentence_vector = sum(vectors) / len(vectors)
+        sentence_vector = sum(vectors)
     
     # Cümle vektörünü listeye ekleyin
         sentence_vectors.append(sentence_vector)
 
 # Cümleler arasındaki benzerlikleri hesaplayın
-    for i in range(len(sentences)):
-        for j in range(i+1, len(sentences)):
+    for i in range(len(cumlelerSon)):
+        for j in range(i+1, len(cumlelerSon)):
             similarity = cosine_similarity([sentence_vectors[i]], [sentence_vectors[j]])[0][0]
             print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
 
