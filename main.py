@@ -95,26 +95,26 @@ def gloveDeneme():
     glove_model = KeyedVectors.load('model.bin')
     sentences = [
     "read book.",
-    "I like this.",
+    "I like banana.",
     "I read book.",
-    "I love this."
+    "I read book."
     ]
-
+    olmayan_vektor = np.zeros(shape=(glove_model.vector_size,), dtype=np.float32)  
     # Cümlelerin vektörlerini tutmak için bir liste oluşturun
     sentence_vectors = []
-
+    vectors=[]
     # Her cümle için vektörleri hesaplayın ve listeye ekleyin
     for sentence in sentences:
     # Cümleyi kelimelere ayırın
         words = sentence.lower().split()
-        # for word in words:
-        #     if word in glove_model.vocab:
-        #         vectors = [glove_model.get_vector(word) for word in words]
-        #     else:
-        #         continue
+        for word in words:
+            if word in glove_model.key_to_index:
+                vectors.append(glove_model.get_vector(word))
+            else:
+                vectors.append(olmayan_vektor)
 
-    # Her kelimenin vektörünü alın
-        vectors = [glove_model.get_vector(word) for word in words]
+    # # Her kelimenin vektörünü alın
+    #     vectors = [glove_model.get_vector(word) for word in words]
     
     # Kelime vektörlerini ortalama alarak cümle vektörünü elde edin
         sentence_vector = sum(vectors) / len(vectors)
