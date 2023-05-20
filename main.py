@@ -23,7 +23,7 @@ from transformers import BertTokenizer, BertModel
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import KeyedVectors
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -82,6 +82,8 @@ def node_olustur(dosya_yolu):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
     # bertAlgoritmasi(duzenlenmisCumleler)
     gloveDeneme(duzenlenmisCumleler)
+    print("+++++++++++++++++++++++++++++++++")
+    tdfDegerBulma(duzenlenmisCumleler)
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
     labelCumleUz.config(text=f"{kelimesay}")
@@ -91,6 +93,31 @@ def node_olustur(dosya_yolu):
     
     nx.draw(G, with_labels=True)
     plt.show()
+def tdfDegerBulma(duzenli):
+    belgeler = [
+    "Bu bir örnek cümle.",
+    "Başka bir cümle örneği.",
+    # "Biraz daha farklı bir cümle."
+    ]
+
+    # TfidfVectorizer'ı oluşturun
+    tfidf_vectorizer = TfidfVectorizer()
+
+    tfidf_matrix = tfidf_vectorizer.fit_transform(duzenli)
+
+    # TF-IDF matrisini alın
+    tfidf_array = tfidf_matrix.toarray()
+
+# Tüm kelimelerin TF-IDF oranını elde etmek için vektörü alın
+    tfidf_values = tfidf_array[0]
+
+# Kelimelerin TF-IDF oranlarını eşleştirin
+    feature_names = tfidf_vectorizer.get_feature_names_out()
+    tfidf_ratios = dict(zip(feature_names, tfidf_values))
+
+    # TF-IDF oranlarını yazdırın
+    for word, ratio in tfidf_ratios.items():
+        print(word, ratio)
 def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
     
