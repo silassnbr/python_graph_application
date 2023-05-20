@@ -101,23 +101,21 @@ def tdfDegerBulma(duzenli):
     ]
 
     # TfidfVectorizer'ı oluşturun
-    tfidf_vectorizer = TfidfVectorizer()
+    vectorizer = TfidfVectorizer()
 
-    tfidf_matrix = tfidf_vectorizer.fit_transform(duzenli)
+    tfidf_matrix = vectorizer.fit_transform(duzenli)
 
-    # TF-IDF matrisini alın
-    tfidf_array = tfidf_matrix.toarray()
+    num_documents, num_features = tfidf_matrix.shape
 
-# Tüm kelimelerin TF-IDF oranını elde etmek için vektörü alın
-    tfidf_values = tfidf_array[0]
-
-# Kelimelerin TF-IDF oranlarını eşleştirin
-    feature_names = tfidf_vectorizer.get_feature_names_out()
-    tfidf_ratios = dict(zip(feature_names, tfidf_values))
-
-    # TF-IDF oranlarını yazdırın
-    for word, ratio in tfidf_ratios.items():
-        print(word, ratio)
+# Her bir metin belgesi için TF-IDF değerlerini yazdırın
+    for i in range(num_documents):
+        print(f"Metin Belgesi {i+1}:")
+        feature_names = vectorizer.get_feature_names_out()
+        for j in range(num_features):
+            word =feature_names[j]
+            tfidf = tfidf_matrix[i, j]
+            print(f"Kelime: {word}, TF-IDF: {tfidf}")
+        print()
 def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
     
