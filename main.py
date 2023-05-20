@@ -93,6 +93,7 @@ def node_olustur(dosya_yolu):
     
     nx.draw(G, with_labels=True)
     plt.show()
+
 def tdfDegerBulma(duzenli):
     belgeler = [
     "Bu bir örnek cümle.",
@@ -106,7 +107,8 @@ def tdfDegerBulma(duzenli):
     tfidf_matrix = vectorizer.fit_transform(duzenli)
 
     num_documents, num_features = tfidf_matrix.shape
-
+    buyukBul=[]
+    buyukBulKelime=[]
 # Her bir metin belgesi için TF-IDF değerlerini yazdırın
     for i in range(num_documents):
         print(f"Metin Belgesi {i+1}:")
@@ -115,7 +117,30 @@ def tdfDegerBulma(duzenli):
             word =feature_names[j]
             tfidf = tfidf_matrix[i, j]
             print(f"Kelime: {word}, TF-IDF: {tfidf}")
+            if(tfidf>0):
+                buyukBul.append(tfidf)
+                buyukBulKelime.append(word)
         print()
+    
+    en_buyuk_indeksler = np.argsort(buyukBul)[-10:]
+    for i in range(len(en_buyuk_indeksler)):
+        sira=en_buyuk_indeksler[i]
+        print(f"{buyukBulKelime[sira]}  --  {buyukBul[sira]}")
+    # en_buyuk_tfidf_degerleri = []
+    # en_buyuk_tfidf_kelimeleri = []
+    # for i in range(num_documents):
+    #     tfidf_scores = tfidf_matrix[i].toarray().flatten()
+    #     en_buyuk_indeksler = tfidf_scores.argsort()[-3:][::-1]  # En büyük 3 değeri alabilirsiniz
+    #     en_buyuk_kelimeler = [vectorizer.get_feature_names_out()[j] for j in en_buyuk_indeksler]
+    #     en_buyuk_degerler = [tfidf_scores[j] for j in en_buyuk_indeksler]
+    #     en_buyuk_tfidf_kelimeleri.append(en_buyuk_kelimeler)
+    #     en_buyuk_tfidf_degerleri.append(en_buyuk_degerler)
+
+    # for i, (kelimeler,degerler) in enumerate(zip(en_buyuk_tfidf_kelimeleri,en_buyuk_degerler)):
+    #     print(f"Metin Belgesi {i+1}:")
+    #     for j, (kelime,deger) in enumerate(zip(kelimeler,degerler)):
+    #         print(f"Kelime {j+1}: {kelime} deger {deger.toString}")
+    #     print()
 def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
     
