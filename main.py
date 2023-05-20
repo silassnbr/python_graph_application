@@ -81,9 +81,13 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
     # bertAlgoritmasi(duzenlenmisCumleler)
+    metin = " ".join(duzenlenmisCumleler)
+    kelimesay=metin.split()
+    sayisi=len(kelimesay)
+    print(sayisi)
     gloveDeneme(duzenlenmisCumleler)
     print("+++++++++++++++++++++++++++++++++")
-    tdfDegerBulma(duzenlenmisCumleler)
+    tdfDegerBulma(duzenlenmisCumleler,sayisi)
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {skor_numerik}")
     labelCumleUz.config(text=f"{kelimesay}")
@@ -94,7 +98,7 @@ def node_olustur(dosya_yolu):
     nx.draw(G, with_labels=True)
     plt.show()
 
-def tdfDegerBulma(duzenli):
+def tdfDegerBulma(duzenli,sayi):
     belgeler = [
     "Bu bir örnek cümle.",
     "Başka bir cümle örneği.",
@@ -111,18 +115,22 @@ def tdfDegerBulma(duzenli):
     buyukBulKelime=[]
 # Her bir metin belgesi için TF-IDF değerlerini yazdırın
     for i in range(num_documents):
-        print(f"Metin Belgesi {i+1}:")
+        # print(f"Metin Belgesi {i+1}:")
         feature_names = vectorizer.get_feature_names_out()
         for j in range(num_features):
             word =feature_names[j]
             tfidf = tfidf_matrix[i, j]
-            print(f"Kelime: {word}, TF-IDF: {tfidf}")
+            # print(f"Kelime: {word}, TF-IDF: {tfidf}")
             if(tfidf>0):
                 buyukBul.append(tfidf)
                 buyukBulKelime.append(word)
-        print()
-    
-    en_buyuk_indeksler = np.argsort(buyukBul)[-10:]
+        # print()
+    for i in range(len(buyukBul)):
+        
+        print(f"{buyukBulKelime[i]}  --  {buyukBul[i]}")
+    print("**********************************")
+    sayi=int(sayi*10/100)
+    en_buyuk_indeksler = np.argsort(buyukBul)[-sayi:]
     for i in range(len(en_buyuk_indeksler)):
         sira=en_buyuk_indeksler[i]
         print(f"{buyukBulKelime[sira]}  --  {buyukBul[sira]}")
@@ -210,6 +218,7 @@ def nltkAsdimlari(duzenle):
     stemmed_sentence = ' '.join(stemmed_tokens)
     
     duzenlenmisCumleler.append(stemmed_sentence)
+    
 def bertAlgoritmasi(duzenlenmis):
     modelAdi = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(modelAdi)
