@@ -32,6 +32,8 @@ kelimesay=[]
 skor_ozel=[]
 skor_numerik=[]
 duzenlenmisCumleler=[]
+tdf_skor=[]
+tdfOn=[]
 def dosya_bul():
     root = Tk()
     root.withdraw()
@@ -44,6 +46,8 @@ def dosya_bul():
         skor_numerik.clear()
         duzenlenmisCumleler.clear()
         kelimesay.clear()
+        tdfOn.clear()
+        tdf_skor.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
@@ -57,8 +61,8 @@ def node_olustur(dosya_yolu):
         satirlar=dosya_icerigi.split('\n')
         baslik=satirlar[0].strip()
         metin = '\n'.join(satirlar[1:]).strip()
-        print(baslik)
-        print("11111111111111111111111111111111")
+        # print(baslik)
+        # print("11111111111111111111111111111111")
         #Metin noktaya göre ayırılıp diziye atanır.
         G = nx.Graph()
         cumleler = metin.split(".")
@@ -84,27 +88,29 @@ def node_olustur(dosya_yolu):
     metin = " ".join(duzenlenmisCumleler)
     kelimesay=metin.split()
     sayisi=len(kelimesay)
-    print(sayisi)
     gloveDeneme(duzenlenmisCumleler)
-    print("+++++++++++++++++++++++++++++++++")
     tdfDegerBulma(duzenlenmisCumleler,sayisi)
+    for i in range(len(duzenlenmisCumleler)-1):
+        tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
-    label_sayi.config(text=f"Numerik skor: {skor_numerik}")
-    labelCumleUz.config(text=f"{kelimesay}")
+    label_sayi.config(text=f"Numerik skor: {tdf_skor}")
+    labelCumleUz.config(text=f"{tdf_skor}")
     # for a in range(len(duzenlenmisCumleler)-1):
     #     print(duzenlenmisCumleler[a])
 
     
     nx.draw(G, with_labels=True)
     plt.show()
-
+def tdfKelimeSkor(duzenlenis,uzunluk):
+    puan=0
+    duzenlenis=duzenlenis.lower().split()
+    for kelime in duzenlenis:
+        if kelime in tdfOn:
+            puan=puan+1
+    puan=round(float(puan/uzunluk),3)
+    tdf_skor.append(puan)
 def tdfDegerBulma(duzenli,sayi):
-    belgeler = [
-    "Bu bir örnek cümle.",
-    "Başka bir cümle örneği.",
-    # "Biraz daha farklı bir cümle."
-    ]
-
+  
     # TfidfVectorizer'ı oluşturun
     vectorizer = TfidfVectorizer()
 
@@ -125,15 +131,15 @@ def tdfDegerBulma(duzenli,sayi):
                 buyukBul.append(tfidf)
                 buyukBulKelime.append(word)
         # print()
-    for i in range(len(buyukBul)):
+    # for i in range(len(buyukBul)):
         
-        print(f"{buyukBulKelime[i]}  --  {buyukBul[i]}")
-    print("**********************************")
+    #     print(f"{buyukBulKelime[i]}  --  {buyukBul[i]}")
+    # print("**********************************")
     sayi=int(sayi*10/100)
     en_buyuk_indeksler = np.argsort(buyukBul)[-sayi:]
     for i in range(len(en_buyuk_indeksler)):
         sira=en_buyuk_indeksler[i]
-        print(f"{buyukBulKelime[sira]}  --  {buyukBul[sira]}")
+        tdfOn.append(buyukBulKelime[sira])
     # en_buyuk_tfidf_degerleri = []
     # en_buyuk_tfidf_kelimeleri = []
     # for i in range(num_documents):
