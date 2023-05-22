@@ -380,7 +380,7 @@ def treshold_degerleri():
             cumle_skor = float(entry2.get())    
 
         messagebox.showinfo("UYARI","Treshold değerlerini giriniz")
-        return True #False a çevrilecek
+        return False #False a çevrilecek
     
     else:    
         cumle_benzerlik = float(entry1.get())
@@ -417,7 +417,7 @@ label2.pack(pady=5)
 entry2 = Entry(root)
 entry2.pack(pady=10)
 
-buton = Button(root, text="DOSYA SEÇ", command=lambda:( dosya_bul() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
+buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton.pack(pady=10)
 buton.configure(bg="#99627A")
 
