@@ -15,7 +15,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-from tkinter import Label, Tk, Button, filedialog,messagebox
+from tkinter import Label, Tk, Button, filedialog,messagebox, Entry
 import re
 import string
 import torch
@@ -40,6 +40,10 @@ baglantiIki=[]
 benzerlik=[]
 global flag
 flag=False
+cumle_skor = 0
+cumle_benzerlik = 0
+p3 =0 
+
 def dosya_bul():
     global flag
     root = Tk()
@@ -103,6 +107,7 @@ def node_olustur(dosya_yolu):
 
     # nx.draw(G, with_labels=True)
     # plt.show()
+
 def gpt_deneme(sentences):
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     model = GPT2Model.from_pretrained("gpt2-medium")
@@ -195,29 +200,73 @@ def gloveDeneme(cumlelerSon):
             similarity_matrix[j][i] = similarity
             # print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
     G = nx.Graph()
+    toplam_kenar = 0
+    treshold_gecen = 0
+    benzer_node_adet = []
+
     for i in range(len(cumlelerSon)):
         G.add_node(i+1)
+        benzer_node_adet.append(0)
+
     for i in range(len(cumlelerSon)):
+
         for j in range(i+1, len(cumlelerSon)):
+            
             similarity = similarity_matrix[i][j]
-            if similarity > 0.5:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
-                G.add_edge(i+1, j+1, weight=round(similarity,3))
+            G.add_edge(i+1, j+1, weight=round(similarity,3))
+
+            if similarity >= cumle_benzerlik:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
+                treshold_gecen += 1
+                benzer_node_adet[i] +=1
+                benzer_node_adet[j] +=1
+
+            toplam_kenar += 1
+
+    tresholdu_gecen_node(treshold_gecen, toplam_kenar)
     scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
     node_attributes = {}
     for i, node in enumerate(G.nodes):
         node_attributes[node] = {'size': 300, 'shape': 's', 'score': scores[i]}
 
+    benzer_node_attributes = {}
+    for i, node in enumerate(G.nodes):
+        benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
+
     pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
     plt.figure(figsize=(20, 20),facecolor="#99627A") 
     edge_labels = nx.get_edge_attributes(G, "weight")
+
+    for edge, label in edge_labels.items():
+
+        edge_pos = [(pos[edge[0]][0] + pos[edge[1]][0]) / 2, (pos[edge[0]][1] + pos[edge[1]][1]) / 2]
+        
+        if label >= cumle_benzerlik:
+            bgcolor = "lightgreen"
+        else:
+            bgcolor = "#99627A"    
+        
+        plt.text(edge_pos[0], edge_pos[1], label, ha='center', va='center', bbox=dict(facecolor=bgcolor, edgecolor=bgcolor), fontsize=10)
+
     nx.draw_networkx(G, pos, with_labels=True,node_color="#643843")
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+   # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color=edge_label_colors )#bbox=dict(facecolor=box_color)
+
     # Skorları düğümlerin dışına yazdırın
     for node, attr in node_attributes.items():
         x, y = pos[node]
-        plt.text(x - 0.05, y, attr['score'], ha='center', va='center')
+        plt.text(x - 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
+
+    for node, attr in benzer_node_attributes.items():
+        x, y = pos[node]
+        plt.text(x + 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="yellow", edgecolor="yellow"))    
+
     plt.axis('off') 
     plt.show()
+
+def tresholdu_gecen_node(treshold_gecen, toplam_kenar):
+    print(treshold_gecen, toplam_kenar)
+    global p3
+    p3 = treshold_gecen/ toplam_kenar
+    print("p3", p3)
 
 def baslikKelimeBul(cuumle,kelimeler,cumleUz):
     a=0
@@ -307,7 +356,7 @@ def dosyaKontrol():
         metin = " ".join(duzenlenmisCumleler)
         kelimesay=metin.split()
         sayisi=len(kelimesay)
-        gloveDeneme(duzenlenmisCumleler)
+        gloveDeneme(duzenlenmisCumleler) # Treshold gecen node sayısı hesaplanır (p3)
         # gpt_deneme(duzenlenmisCumleler)
         tdfDegerBulma(duzenlenmisCumleler,sayisi)
         for i in range(len(duzenlenmisCumleler)-1):
@@ -317,6 +366,28 @@ def dosyaKontrol():
         # labelCumleUz.config(text=f"{tdf_skor}")    
     else:
         messagebox.showinfo("UYARI","Dosya seçmediniz")
+
+def treshold_degerleri():
+
+    global cumle_benzerlik
+    global cumle_skor
+
+    if entry1.get() == "" or entry2.get() == "":
+
+        if(entry1.get() != ""):
+            cumle_benzerlik = float(entry1.get())
+        if(entry2.get() != ""):
+            cumle_skor = float(entry2.get())    
+
+        messagebox.showinfo("UYARI","Treshold değerlerini giriniz")
+        return True #False a çevrilecek
+    
+    else:    
+        cumle_benzerlik = float(entry1.get())
+        cumle_skor = float(entry2.get())
+        print("cumle_benzerlik 1:", cumle_benzerlik , "cumle_skor 2:", cumle_skor)
+        return True
+
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
@@ -333,7 +404,20 @@ x_konumu = int((ekran_genislik - pencere_genislik) / 2)
 y_konumu = int((ekran_yukseklik - pencere_yukseklik) / 2)
 root.geometry(f"{pencere_genislik}x{pencere_yukseklik}+{x_konumu}+{y_konumu}")
 
-buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
+label1 = Label(root, text="Cümle Benzerliği Tresholdu:", fg="#643843")
+label1.configure(bg="#C88EA7")
+label1.pack(pady=5)
+entry1 = Entry(root)
+entry1.pack(pady=10)
+
+# İkinci giriş kutusu
+label2 = Label(root, text="Cümle Skoru Tresholdu:", fg="#643843")
+label2.configure(bg="#C88EA7")
+label2.pack(pady=5)
+entry2 = Entry(root)
+entry2.pack(pady=10)
+
+buton = Button(root, text="DOSYA SEÇ", command=lambda:( dosya_bul() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton.pack(pady=10)
 buton.configure(bg="#99627A")
 
@@ -353,7 +437,7 @@ label_sayiOzel = Label(root, text="",fg="#643843")
 label_sayiOzel.pack(pady=10)
 label_sayiOzel.configure(bg="#C88EA7")
 
-buton2 = Button(root, text="GRAF OLUŞTUR", command=dosyaKontrol,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
+buton2 = Button(root, text="GRAF OLUŞTUR", command=lambda:( dosyaKontrol() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton2.pack(pady=10)
 buton2.configure(bg="#99627A")
 root.mainloop()
