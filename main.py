@@ -38,7 +38,10 @@ tdfOn=[]
 baglantiBir=[]
 baglantiIki=[]
 benzerlik=[]
+global flag
+flag=False
 def dosya_bul():
+    global flag
     root = Tk()
     root.withdraw()
     dosya_yolu = filedialog.askopenfilename()
@@ -57,12 +60,15 @@ def dosya_bul():
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
+            flag=False
             messagebox.showinfo("UYARI","Lütfen txt formatında bir dosya seçiniz")
     else:
+        flag=False
         messagebox.showinfo("UYARI","Dosya Seçilemedi")
 
 #node oluşturma fonksiyonu
 def node_olustur(dosya_yolu):
+    global flag
     with open(dosya_yolu, encoding="utf8") as dosya:
         dosya_icerigi = dosya.read()
         satirlar=dosya_icerigi.split('\n')
@@ -94,7 +100,9 @@ def node_olustur(dosya_yolu):
         tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {tdf_skor}")
-    labelCumleUz.config(text=f"{tdf_skor}")
+    labelCumleUz.config(text=f"{tdf_skor}")    
+    flag=True
+
     # G = nx.Graph()
     # # graph olustruma kısmı DÜZENLENECEK###############################
     # for i in range(len(cumleler)-1):
@@ -301,6 +309,12 @@ def numerikSayisi(cumle):
     numerikler = re.findall(r'\d+', cumle)
     sayilar.append(len(numerikler))
     return sayilar
+
+def dosyaKontrol():
+    if (flag==True):
+        print("graf olustur")
+    else:
+        messagebox.showinfo("UYARI","Dosya seçmediniz")
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
@@ -332,6 +346,10 @@ label_sayi.configure(bg="#C88EA7")
 labelCumleUz = Label(root, text="",fg="#643843")
 labelCumleUz.pack(pady=10)
 labelCumleUz.configure(bg="#C88EA7")
+
+buton2 = Button(root, text="GRAF OLUŞTUR", command=dosyaKontrol,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
+buton2.pack(pady=10)
+buton2.configure(bg="#99627A")
 root.mainloop()
 
 
