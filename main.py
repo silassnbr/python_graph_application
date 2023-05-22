@@ -24,6 +24,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import KeyedVectors
 from sklearn.feature_extraction.text import TfidfVectorizer
+from transformers import GPT2Tokenizer, GPT2Model
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -34,6 +35,9 @@ skor_numerik=[]
 duzenlenmisCumleler=[]
 tdf_skor=[]
 tdfOn=[]
+baglantiBir=[]
+baglantiIki=[]
+benzerlik=[]
 def dosya_bul():
     root = Tk()
     root.withdraw()
@@ -48,31 +52,25 @@ def dosya_bul():
         kelimesay.clear()
         tdfOn.clear()
         tdf_skor.clear()
+        baglantiBir.clear()
+        baglantiIki.clear()
         if txt_kontrol(dosya_yolu):
             node_olustur(dosya_yolu)
         else:
             messagebox.showinfo("UYARI","Lütfen txt formatında bir dosya seçiniz")
     else:
         messagebox.showinfo("UYARI","Dosya Seçilemedi")
+
 #node oluşturma fonksiyonu
 def node_olustur(dosya_yolu):
-    with open(dosya_yolu, encoding="utf8") as f:
-        dosya_icerigi = f.read()
+    with open(dosya_yolu, encoding="utf8") as dosya:
+        dosya_icerigi = dosya.read()
         satirlar=dosya_icerigi.split('\n')
         baslik=satirlar[0].strip()
         metin = '\n'.join(satirlar[1:]).strip()
-        # print(baslik)
-        # print("11111111111111111111111111111111")
-        #Metin noktaya göre ayırılıp diziye atanır.
-        G = nx.Graph()
+        
         cumleler = metin.split(".")
-    # graph olustruma kısmı DÜZENLENECEK###############################
-    for i in range(len(cumleler)-1):
-        G.add_node(cumleler[i],label=cumleler[i])
-
-    for i in range(len(cumleler) - 2):
-        G.add_edge(cumleler[i],cumleler[i+1])
-    #########################
+    
     basliktakiKelimeler=baslik.lower().split()
     for i in range(len(cumleler)-1):
         ozel_isimSay(cumleler[i])
@@ -82,6 +80,7 @@ def node_olustur(dosya_yolu):
 
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
+    
     for i in range(len(cumleler)-1):
         baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
     # bertAlgoritmasi(duzenlenmisCumleler)
@@ -89,18 +88,49 @@ def node_olustur(dosya_yolu):
     kelimesay=metin.split()
     sayisi=len(kelimesay)
     gloveDeneme(duzenlenmisCumleler)
+    # gpt_deneme(duzenlenmisCumleler)
     tdfDegerBulma(duzenlenmisCumleler,sayisi)
     for i in range(len(duzenlenmisCumleler)-1):
         tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
     label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
     label_sayi.config(text=f"Numerik skor: {tdf_skor}")
     labelCumleUz.config(text=f"{tdf_skor}")
-    # for a in range(len(duzenlenmisCumleler)-1):
-    #     print(duzenlenmisCumleler[a])
+    # G = nx.Graph()
+    # # graph olustruma kısmı DÜZENLENECEK###############################
+    # for i in range(len(cumleler)-1):
+    #     G.add_node(cumleler[i],label=cumleler[i])
 
-    
-    nx.draw(G, with_labels=True)
-    plt.show()
+    # for i in range(len(baglantiBir) - 1):
+    #     G.add_edge(baglantiBir[i],baglantiIki[i])
+    # #########################
+
+
+    # nx.draw(G, with_labels=True)
+    # plt.show()
+def gpt_deneme(sentences):
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
+    model = GPT2Model.from_pretrained("gpt2-medium")
+
+   
+
+# Cümleleri GPT-3 ile kodlayın
+    encoded_sentences = [tokenizer.encode(sentence, add_special_tokens=True, return_tensors="pt") for sentence in sentences]
+
+# Cümlelerin temsillerini alın
+    representations = []
+    with torch.no_grad():
+        for encoded_sentence in encoded_sentences:
+            representation = model(encoded_sentence)[0].squeeze()
+            representations.append(representation)
+
+# Kozinüs benzerliğini hesapla
+    similarity_scores = cosine_similarity(representations)
+
+# Benzerlik skorlarını yazdır
+    for i in range(len(sentences)):
+        for j in range(i + 1, len(sentences)):
+            similarity_score = similarity_scores[i, j]
+            print(f"Benzerlik Skoru ({sentences[i]} - {sentences[j]}): {similarity_score}")
 def tdfKelimeSkor(duzenlenis,uzunluk):
     puan=0
     duzenlenis=duzenlenis.lower().split()
@@ -111,7 +141,6 @@ def tdfKelimeSkor(duzenlenis,uzunluk):
     tdf_skor.append(puan)
 def tdfDegerBulma(duzenli,sayi):
   
-    # TfidfVectorizer'ı oluşturun
     vectorizer = TfidfVectorizer()
 
     tfidf_matrix = vectorizer.fit_transform(duzenli)
@@ -119,7 +148,7 @@ def tdfDegerBulma(duzenli,sayi):
     num_documents, num_features = tfidf_matrix.shape
     buyukBul=[]
     buyukBulKelime=[]
-# Her bir metin belgesi için TF-IDF değerlerini yazdırın
+# Tdf degeri 0 dan buyuk olanalrı tut
     for i in range(num_documents):
         # print(f"Metin Belgesi {i+1}:")
         feature_names = vectorizer.get_feature_names_out()
@@ -140,26 +169,9 @@ def tdfDegerBulma(duzenli,sayi):
     for i in range(len(en_buyuk_indeksler)):
         sira=en_buyuk_indeksler[i]
         tdfOn.append(buyukBulKelime[sira])
-    # en_buyuk_tfidf_degerleri = []
-    # en_buyuk_tfidf_kelimeleri = []
-    # for i in range(num_documents):
-    #     tfidf_scores = tfidf_matrix[i].toarray().flatten()
-    #     en_buyuk_indeksler = tfidf_scores.argsort()[-3:][::-1]  # En büyük 3 değeri alabilirsiniz
-    #     en_buyuk_kelimeler = [vectorizer.get_feature_names_out()[j] for j in en_buyuk_indeksler]
-    #     en_buyuk_degerler = [tfidf_scores[j] for j in en_buyuk_indeksler]
-    #     en_buyuk_tfidf_kelimeleri.append(en_buyuk_kelimeler)
-    #     en_buyuk_tfidf_degerleri.append(en_buyuk_degerler)
-
-    # for i, (kelimeler,degerler) in enumerate(zip(en_buyuk_tfidf_kelimeleri,en_buyuk_degerler)):
-    #     print(f"Metin Belgesi {i+1}:")
-    #     for j, (kelime,deger) in enumerate(zip(kelimeler,degerler)):
-    #         print(f"Kelime {j+1}: {kelime} deger {deger.toString}")
-    #     print()
 def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
-    
-    olmayan_vektor = np.zeros(shape=(glove_model.vector_size,), dtype=np.float32)  
-    # Cümlelerin vektörlerini tutmak için bir liste oluşturun
+        
     sentence_vectors = []
     vectors=[]
     # Her cümle için vektörleri hesaplayın ve listeye ekleyin
@@ -174,23 +186,42 @@ def gloveDeneme(cumlelerSon):
                 similar_vector = glove_model.get_vector(similar_word)
                 vectors.append(similar_vector)
                 
-
-    # # Her kelimenin vektörünü alın
-    #     vectors = [glove_model.get_vector(word) for word in words]
-    
-    # Kelime vektörlerini ortalama alarak cümle vektörünü elde edin
         sentence_vector = sum(vectors)
-    
-    # Cümle vektörünü listeye ekleyin
+
         sentence_vectors.append(sentence_vector)
 
-# Cümleler arasındaki benzerlikleri hesaplayın
+# Cümleler arası benzerlık hesabı
+    similarity_matrix = np.zeros((len(cumlelerSon), len(cumlelerSon)))
     for i in range(len(cumlelerSon)):
         for j in range(i+1, len(cumlelerSon)):
             similarity = cosine_similarity([sentence_vectors[i]], [sentence_vectors[j]])[0][0]
-            print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
+            similarity_matrix[i][j] = similarity
+            similarity_matrix[j][i] = similarity
+            # print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
+    G = nx.Graph()
+    for i in range(len(cumlelerSon)):
+        G.add_node(i+1)
+    for i in range(len(cumlelerSon)):
+        for j in range(i+1, len(cumlelerSon)):
+            similarity = similarity_matrix[i][j]
+            if similarity > 0.5:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
+                G.add_edge(i+1, j+1, weight=round(similarity,3))
+    scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
+    node_attributes = {}
+    for i, node in enumerate(G.nodes):
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': scores[i]}
 
-
+    pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
+    plt.figure(figsize=(20, 20),facecolor="#99627A") 
+    edge_labels = nx.get_edge_attributes(G, "weight")
+    nx.draw_networkx(G, pos, with_labels=True,node_color="#643843")
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    # Skorları düğümlerin dışına yazdırın
+    for node, attr in node_attributes.items():
+        x, y = pos[node]
+        plt.text(x - 0.05, y, attr['score'], ha='center', va='center')
+    plt.axis('off') 
+    plt.show()
 
 def baslikKelimeBul(cuumle,kelimeler,cumleUz):
     a=0
@@ -205,22 +236,19 @@ def nltkAsdimlari(duzenle):
     stemmer = PorterStemmer() 
     
     punctuation = string.punctuation
-    # Cümleyi punctuation içindeki karakterlere göre bölerek kelimelere ayırın
-    # tokensPunc = duzenle.split()
-    # Noktalama işaretleri olmayan kelimeleri filtreleyin
+   
     punct_sentence = ''.join(char for char in duzenle if char not in punctuation)
-    # Filtrelenmiş kelimeleri birleştirerek cümleyi oluşturun
-    # punct_sentence = ' '.join(punct_tokens)
+  
     
     
-    stop_words = set(stopwords.words("english"))  # İngilizce stop words'leri yükleyin
+    stop_words = set(stopwords.words("english"))  
     stop_tokens = word_tokenize(punct_sentence)  # Cümleyi kelimelere ayırın
-    filtered_tokens = [token for token in stop_tokens if token.lower() not in stop_words]  # Stop words olmayan kelimeleri filtreleyin
+    filtered_tokens = [token for token in stop_tokens if token.lower() not in stop_words]  
     filtered_sentence = ' '.join(filtered_tokens) 
 
-
+    # Her kelimeye stemming işlemi uygulayın
     duzenlenmis = sent_tokenize(filtered_sentence)
-    stemmed_tokens = [stemmer.stem(token) for token in duzenlenmis]  # Her kelimeye stemming işlemi uygulayın
+    stemmed_tokens = [stemmer.stem(token) for token in duzenlenmis]  
     stemmed_sentence = ' '.join(stemmed_tokens)
     
     duzenlenmisCumleler.append(stemmed_sentence)
