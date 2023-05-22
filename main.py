@@ -387,7 +387,9 @@ def treshold_degerleri():
         cumle_skor = float(entry2.get())
         print("cumle_benzerlik 1:", cumle_benzerlik , "cumle_skor 2:", cumle_skor)
         return True
-
+def textAl():
+    text = entry.get()  # Metin kutusundaki değeri alın
+    print(text)
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
@@ -440,6 +442,11 @@ label_sayiOzel.configure(bg="#C88EA7")
 buton2 = Button(root, text="GRAF OLUŞTUR", command=lambda:( dosyaKontrol() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton2.pack(pady=10)
 buton2.configure(bg="#99627A")
+entry = Entry(root,width=80)
+entry.pack()
+buton3 = Button(root, text="Kıyasla", command=textAl,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
+buton3.pack(pady=10)
+buton3.configure(bg="#99627A")
 root.mainloop()
 
 
