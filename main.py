@@ -58,12 +58,15 @@ def dosya_bul():
         baglantiBir.clear()
         baglantiIki.clear()
         if txt_kontrol(dosya_yolu):
+            flag=True
             node_olustur(dosya_yolu)
         else:
             flag=False
+            label_sayiOzel.config(text=f"Dosya Seçilemedi")
             messagebox.showinfo("UYARI","Lütfen txt formatında bir dosya seçiniz")
     else:
         flag=False
+        label_sayiOzel.config(text=f"Dosya Seçilemedi")
         messagebox.showinfo("UYARI","Dosya Seçilemedi")
 
 #node oluşturma fonksiyonu
@@ -74,9 +77,10 @@ def node_olustur(dosya_yolu):
         satirlar=dosya_icerigi.split('\n')
         baslik=satirlar[0].strip()
         metin = '\n'.join(satirlar[1:]).strip()
-        
+        global cumleler
         cumleler = metin.split(".")
     
+    global basliktakiKelimeler
     basliktakiKelimeler=baslik.lower().split()
     for i in range(len(cumleler)-1):
         ozel_isimSay(cumleler[i])
@@ -86,23 +90,7 @@ def node_olustur(dosya_yolu):
 
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
-    
-    for i in range(len(cumleler)-1):
-        baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
-    # bertAlgoritmasi(duzenlenmisCumleler)
-    metin = " ".join(duzenlenmisCumleler)
-    kelimesay=metin.split()
-    sayisi=len(kelimesay)
-    gloveDeneme(duzenlenmisCumleler)
-    # gpt_deneme(duzenlenmisCumleler)
-    tdfDegerBulma(duzenlenmisCumleler,sayisi)
-    for i in range(len(duzenlenmisCumleler)-1):
-        tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
-    label_sayiOzel.config(text=f"Özel İsim skor: {skor_ozel}")
-    label_sayi.config(text=f"Numerik skor: {tdf_skor}")
-    labelCumleUz.config(text=f"{tdf_skor}")    
-    flag=True
-
+    label_sayiOzel.config(text=f"Dosya Seçildi")
     # G = nx.Graph()
     # # graph olustruma kısmı DÜZENLENECEK###############################
     # for i in range(len(cumleler)-1):
@@ -313,6 +301,20 @@ def numerikSayisi(cumle):
 def dosyaKontrol():
     if (flag==True):
         print("graf olustur")
+        for i in range(len(cumleler)-1):
+            baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
+        # bertAlgoritmasi(duzenlenmisCumleler)
+        metin = " ".join(duzenlenmisCumleler)
+        kelimesay=metin.split()
+        sayisi=len(kelimesay)
+        gloveDeneme(duzenlenmisCumleler)
+        # gpt_deneme(duzenlenmisCumleler)
+        tdfDegerBulma(duzenlenmisCumleler,sayisi)
+        for i in range(len(duzenlenmisCumleler)-1):
+            tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
+        
+        # label_sayi.config(text=f"Numerik skor: {tdf_skor}")
+        # labelCumleUz.config(text=f"{tdf_skor}")    
     else:
         messagebox.showinfo("UYARI","Dosya seçmediniz")
 root = Tk()
@@ -335,17 +337,21 @@ buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,
 buton.pack(pady=10)
 buton.configure(bg="#99627A")
 
+# label_sayiOzel = Label(root, text="",fg="#643843")
+# label_sayiOzel.pack(pady=10)
+# label_sayiOzel.configure(bg="#C88EA7")
+
+# label_sayi = Label(root, text="",fg="#643843")
+# label_sayi.pack(pady=10)
+# label_sayi.configure(bg="#C88EA7")
+
+# labelCumleUz = Label(root, text="",fg="#643843")
+# labelCumleUz.pack(pady=10)
+# labelCumleUz.configure(bg="#C88EA7")
+
 label_sayiOzel = Label(root, text="",fg="#643843")
 label_sayiOzel.pack(pady=10)
 label_sayiOzel.configure(bg="#C88EA7")
-
-label_sayi = Label(root, text="",fg="#643843")
-label_sayi.pack(pady=10)
-label_sayi.configure(bg="#C88EA7")
-
-labelCumleUz = Label(root, text="",fg="#643843")
-labelCumleUz.pack(pady=10)
-labelCumleUz.configure(bg="#C88EA7")
 
 buton2 = Button(root, text="GRAF OLUŞTUR", command=dosyaKontrol,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton2.pack(pady=10)
