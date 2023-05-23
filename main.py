@@ -24,6 +24,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import KeyedVectors
 from sklearn.feature_extraction.text import TfidfVectorizer
+import rouge_skor
 from transformers import GPT2Tokenizer, GPT2Model
 # dosya seçme fonksiyonu 
 ozel_isimler = []
@@ -388,8 +389,26 @@ def treshold_degerleri():
         print("cumle_benzerlik 1:", cumle_benzerlik , "cumle_skor 2:", cumle_skor)
         return True
 def textAl():
+    candidate_text=' '.join(duzenlenmisCumleler)
     text = entry.get()  # Metin kutusundaki değeri alın
     print(text)
+    rouge_skor.rouge_scores(candidate_text, text)
+    
+    SKOR= []
+    r, p, f = rouge_skor.calculate_rouge_1(candidate_text, text)
+    SKOR.append([r,p,f])
+    r, p, f = rouge_skor.calculate_rouge_2(candidate_text, text)
+    SKOR.append([r,p,f])
+    r, p, f = rouge_skor.calculate_rouge_l(candidate_text, text)
+    SKOR.append([r,p,f])
+
+    label_baslik.configure(text="       r       p       f")
+    label3.configure(text=f"rouge-1 {SKOR[0]}")
+    label4.configure(text=f"rouge-2 {SKOR[1]}")
+    label5.configure(text=f"rouge-l {SKOR[2]}")
+
+    print(SKOR)
+
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
@@ -406,22 +425,21 @@ x_konumu = int((ekran_genislik - pencere_genislik) / 2)
 y_konumu = int((ekran_yukseklik - pencere_yukseklik) / 2)
 root.geometry(f"{pencere_genislik}x{pencere_yukseklik}+{x_konumu}+{y_konumu}")
 
-label1 = Label(root, text="Cümle Benzerliği Tresholdu:", fg="#643843")
-label1.configure(bg="#C88EA7")
-label1.pack(pady=5)
-entry1 = Entry(root)
-entry1.pack(pady=10)
-
-# İkinci giriş kutusu
-label2 = Label(root, text="Cümle Skoru Tresholdu:", fg="#643843")
-label2.configure(bg="#C88EA7")
-label2.pack(pady=5)
-entry2 = Entry(root)
-entry2.pack(pady=10)
-
 buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton.pack(pady=10)
 buton.configure(bg="#99627A")
+
+label1 = Label(root, text="Cümle Benzerliği Tresholdu:", fg="#643843")
+label1.configure(bg="#C88EA7")
+label1.pack(pady=15)
+entry1 = Entry(root)
+entry1.pack(pady=0)
+
+label2 = Label(root, text="Cümle Skoru Tresholdu:", fg="#643843")
+label2.configure(bg="#C88EA7")
+label2.pack(pady=15)
+entry2 = Entry(root)
+entry2.pack(pady=0)
 
 # label_sayiOzel = Label(root, text="",fg="#643843")
 # label_sayiOzel.pack(pady=10)
@@ -447,6 +465,20 @@ entry.pack()
 buton3 = Button(root, text="Kıyasla", command=textAl,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton3.pack(pady=10)
 buton3.configure(bg="#99627A")
+
+label_baslik = Label(root, text=" ", fg="#643843")
+label_baslik.configure(bg="#C88EA7")
+label_baslik.pack(pady=3)
+label3 = Label(root, text="Rouge Skoru r", fg="#643843")
+label3.configure(bg="#C88EA7")
+label3.pack(pady=3)
+label4 = Label(root, text="Rouge Skoru p", fg="#643843")
+label4.configure(bg="#C88EA7")
+label4.pack(pady=3)
+label5 = Label(root, text="Rouge Skoru f", fg="#643843")
+label5.configure(bg="#C88EA7")
+label5.pack(pady=3)
+
 root.mainloop()
 
 
