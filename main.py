@@ -190,8 +190,69 @@ def word2vec(cumle):
             sentence1 = cumle[i]
             sentence2 = cumle[j]
             similarity = similarity_matrix[i][j]
-            print(f"Benzerlik ({sentence1}, {sentence2}): {similarity}")
+            # print(f"Benzerlik ({sentence1}, {sentence2}): {similarity}")
+    G = nx.Graph()
+    toplam_kenar = 0
+    treshold_gecen = 0
+    benzer_node_adet = []
 
+    for i in range(len(cumle)):
+        G.add_node(i+1)
+        benzer_node_adet.append(0)
+
+    for i in range(len(cumle)):
+
+        for j in range(i+1, len(cumle)):
+            
+            similarity = similarity_matrix[i][j]
+            G.add_edge(i+1, j+1, weight=round(similarity,3))
+
+            if similarity >= cumle_benzerlik:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
+                treshold_gecen += 1
+                benzer_node_adet[i] +=1
+                benzer_node_adet[j] +=1
+
+            toplam_kenar += 1
+
+    tresholdu_gecen_node(treshold_gecen, toplam_kenar)
+    scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
+    node_attributes = {}
+    for i, node in enumerate(G.nodes):
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': scores[i]}
+
+    benzer_node_attributes = {}
+    for i, node in enumerate(G.nodes):
+        benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
+
+    pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
+    plt.figure(figsize=(20, 20),facecolor="#99627A") 
+    edge_labels = nx.get_edge_attributes(G, "weight")
+
+    for edge, label in edge_labels.items():
+
+        edge_pos = [(pos[edge[0]][0] + pos[edge[1]][0]) / 2, (pos[edge[0]][1] + pos[edge[1]][1]) / 2]
+        
+        if label >= cumle_benzerlik:
+            bgcolor = "lightgreen"
+        else:
+            bgcolor = "#99627A"    
+        
+        plt.text(edge_pos[0], edge_pos[1], label, ha='center', va='center', bbox=dict(facecolor=bgcolor, edgecolor=bgcolor), fontsize=10)
+
+    nx.draw_networkx(G, pos, with_labels=True,node_color="#643843")
+   # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color=edge_label_colors )#bbox=dict(facecolor=box_color)
+
+    # Skorları düğümlerin dışına yazdırın
+    for node, attr in node_attributes.items():
+        x, y = pos[node]
+        plt.text(x - 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
+
+    for node, attr in benzer_node_attributes.items():
+        x, y = pos[node]
+        plt.text(x + 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="yellow", edgecolor="yellow"))    
+
+    plt.axis('off') 
+    plt.show()
 
 
 def gloveDeneme(cumlelerSon):
@@ -375,7 +436,20 @@ def dosyaKontrol():
     secim=secilenAlgoritma.get()
     if(secim=='Word2vec'):
         print(secim)
-        word2vec(duzenlenmisCumleler)
+        if (flag==True):
+            for i in range(len(cumleler)-1):
+                baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
+            # bertAlgoritmasi(duzenlenmisCumleler)
+            metin = " ".join(duzenlenmisCumleler)
+            kelimesay=metin.split()
+            sayisi=len(kelimesay)
+            word2vec(duzenlenmisCumleler)
+            tdfDegerBulma(duzenlenmisCumleler,sayisi)
+            for i in range(len(duzenlenmisCumleler)-1):
+                tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
+        
+        else:
+            messagebox.showinfo("UYARI","Dosya seçmediniz")
     else:
         if (flag==True):
             for i in range(len(cumleler)-1):
