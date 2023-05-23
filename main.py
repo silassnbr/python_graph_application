@@ -26,6 +26,8 @@ from gensim.models import KeyedVectors
 from sklearn.feature_extraction.text import TfidfVectorizer
 import rouge_skor
 from transformers import GPT2Tokenizer, GPT2Model
+from gensim.models import Word2Vec
+from tkinter import *
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -96,26 +98,13 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
     label_sayiOzel.config(text=f"Dosya Seçildi")
-    # G = nx.Graph()
-    # # graph olustruma kısmı DÜZENLENECEK###############################
-    # for i in range(len(cumleler)-1):
-    #     G.add_node(cumleler[i],label=cumleler[i])
-
-    # for i in range(len(baglantiBir) - 1):
-    #     G.add_edge(baglantiBir[i],baglantiIki[i])
-    # #########################
-
-
-    # nx.draw(G, with_labels=True)
-    # plt.show()
-
 def gpt_deneme(sentences):
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     model = GPT2Model.from_pretrained("gpt2-medium")
 
    
 
-# Cümleleri GPT-3 ile kodlayın
+# Cümleleri GPT-3 ile kodlama
     encoded_sentences = [tokenizer.encode(sentence, add_special_tokens=True, return_tensors="pt") for sentence in sentences]
 
 # Cümlelerin temsillerini alın
@@ -125,7 +114,7 @@ def gpt_deneme(sentences):
             representation = model(encoded_sentence)[0].squeeze()
             representations.append(representation)
 
-# Kozinüs benzerliğini hesapla
+# Kozinüs benzerliğini hesaplama
     similarity_scores = cosine_similarity(representations)
 
 # Benzerlik skorlarını yazdır
@@ -171,6 +160,40 @@ def tdfDegerBulma(duzenli,sayi):
     for i in range(len(en_buyuk_indeksler)):
         sira=en_buyuk_indeksler[i]
         tdfOn.append(buyukBulKelime[sira])
+def vectorBul(sentence, model):
+    words = sentence.split()
+    vectors = [vectorKelime(word, model) for word in words]
+    if vectors:
+        return np.mean(vectors, axis=0)
+    else:
+        return np.zeros(model.vector_size)
+def vectorKelime(word, model):
+    if word in model:
+        return model[word]
+    else:
+        return np.zeros(model.vector_size)
+
+def word2vec(cumle):
+
+    model = KeyedVectors.load('vord2vec.bin')
+
+    # model = Word2Vec.load('GoogleNews-vectors-negative300.bin')
+
+    vector_list = [vectorBul(sentence, model) for sentence in cumle]
+
+    
+    similarity_matrix = cosine_similarity(vector_list)
+
+
+    for i in range(len(cumle)):
+        for j in range(i+1, len(cumle)):
+            sentence1 = cumle[i]
+            sentence2 = cumle[j]
+            similarity = similarity_matrix[i][j]
+            print(f"Benzerlik ({sentence1}, {sentence2}): {similarity}")
+
+
+
 def gloveDeneme(cumlelerSon):
     glove_model = KeyedVectors.load('model.bin')
         
@@ -349,24 +372,28 @@ def numerikSayisi(cumle):
     return sayilar
 
 def dosyaKontrol():
-    if (flag==True):
-        print("graf olustur")
-        for i in range(len(cumleler)-1):
-            baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
-        # bertAlgoritmasi(duzenlenmisCumleler)
-        metin = " ".join(duzenlenmisCumleler)
-        kelimesay=metin.split()
-        sayisi=len(kelimesay)
-        gloveDeneme(duzenlenmisCumleler) # Treshold gecen node sayısı hesaplanır (p3)
-        # gpt_deneme(duzenlenmisCumleler)
-        tdfDegerBulma(duzenlenmisCumleler,sayisi)
-        for i in range(len(duzenlenmisCumleler)-1):
-            tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
-        
-        # label_sayi.config(text=f"Numerik skor: {tdf_skor}")
-        # labelCumleUz.config(text=f"{tdf_skor}")    
+    secim=secilenAlgoritma.get()
+    if(secim=='Word2vec'):
+        print(secim)
+        word2vec(duzenlenmisCumleler)
     else:
-        messagebox.showinfo("UYARI","Dosya seçmediniz")
+        if (flag==True):
+            for i in range(len(cumleler)-1):
+                baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
+            # bertAlgoritmasi(duzenlenmisCumleler)
+            metin = " ".join(duzenlenmisCumleler)
+            kelimesay=metin.split()
+            sayisi=len(kelimesay)
+            gloveDeneme(duzenlenmisCumleler) # Treshold gecen node sayısı hesaplanır (p3)
+            # gpt_deneme(duzenlenmisCumleler)
+            tdfDegerBulma(duzenlenmisCumleler,sayisi)
+            for i in range(len(duzenlenmisCumleler)-1):
+                tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
+        
+            # label_sayi.config(text=f"Numerik skor: {tdf_skor}")
+            # labelCumleUz.config(text=f"{tdf_skor}")    
+        else:
+            messagebox.showinfo("UYARI","Dosya seçmediniz")
 
 def treshold_degerleri():
 
@@ -390,24 +417,27 @@ def treshold_degerleri():
         return True
 def textAl():
     candidate_text=' '.join(duzenlenmisCumleler)
-    text = entry.get()  # Metin kutusundaki değeri alın
+    text = entry.get()  
     print(text)
-    rouge_skor.rouge_scores(candidate_text, text)
+    if text is not None:
+        rouge_skor.rouge_scores(candidate_text, text)
     
-    SKOR= []
-    r, p, f = rouge_skor.calculate_rouge_1(candidate_text, text)
-    SKOR.append([r,p,f])
-    r, p, f = rouge_skor.calculate_rouge_2(candidate_text, text)
-    SKOR.append([r,p,f])
-    r, p, f = rouge_skor.calculate_rouge_l(candidate_text, text)
-    SKOR.append([r,p,f])
+        SKOR= []
+        r, p, f = rouge_skor.calculate_rouge_1(candidate_text, text)
+        SKOR.append([r,p,f])
+        r, p, f = rouge_skor.calculate_rouge_2(candidate_text, text)
+        SKOR.append([r,p,f])
+        r, p, f = rouge_skor.calculate_rouge_l(candidate_text, text)
+        SKOR.append([r,p,f])
 
-    label_baslik.configure(text="       r       p       f")
-    label3.configure(text=f"rouge-1 {SKOR[0]}")
-    label4.configure(text=f"rouge-2 {SKOR[1]}")
-    label5.configure(text=f"rouge-l {SKOR[2]}")
+        label_baslik.configure(text="       r       p       f")
+        label3.configure(text=f"rouge-1 {SKOR[0]}")
+        label4.configure(text=f"rouge-2 {SKOR[1]}")
+        label5.configure(text=f"rouge-l {SKOR[2]}")
 
-    print(SKOR)
+        print(SKOR)
+    else:
+        messagebox.showinfo("UYARI","Lütfen kıyaslamak için metin giriniz!!!")
 
 root = Tk()
 root.title("Dosya Seçme Uygulaması")
@@ -441,22 +471,20 @@ label2.pack(pady=15)
 entry2 = Entry(root)
 entry2.pack(pady=0)
 
-# label_sayiOzel = Label(root, text="",fg="#643843")
-# label_sayiOzel.pack(pady=10)
-# label_sayiOzel.configure(bg="#C88EA7")
-
-# label_sayi = Label(root, text="",fg="#643843")
-# label_sayi.pack(pady=10)
-# label_sayi.configure(bg="#C88EA7")
-
-# labelCumleUz = Label(root, text="",fg="#643843")
-# labelCumleUz.pack(pady=10)
-# labelCumleUz.configure(bg="#C88EA7")
 
 label_sayiOzel = Label(root, text="",fg="#643843")
 label_sayiOzel.pack(pady=10)
 label_sayiOzel.configure(bg="#C88EA7")
 
+#dropdown
+algoritmalar = ["Word2vec", "Glove"]
+
+secilenAlgoritma = StringVar(root)
+#Vord2vec varsayılan olarak ayarlandı
+secilenAlgoritma.set(algoritmalar[0])  
+dropdown = OptionMenu(root, secilenAlgoritma, *algoritmalar)
+dropdown.pack()
+########
 buton2 = Button(root, text="GRAF OLUŞTUR", command=lambda:( dosyaKontrol() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton2.pack(pady=10)
 buton2.configure(bg="#99627A")
