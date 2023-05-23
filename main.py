@@ -225,7 +225,7 @@ def word2vec(cumle):
         benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
 
     pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
-    plt.figure(figsize=(20, 20),facecolor="#99627A") 
+    plt.figure(figsize=(15, 8),facecolor="#99627A") 
     edge_labels = nx.get_edge_attributes(G, "weight")
 
     for edge, label in edge_labels.items():
@@ -318,7 +318,7 @@ def gloveDeneme(cumlelerSon):
         benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
 
     pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
-    plt.figure(figsize=(20, 20),facecolor="#99627A") 
+    plt.figure(figsize=(15, 8),facecolor="#99627A") 
     edge_labels = nx.get_edge_attributes(G, "weight")
 
     for edge, label in edge_labels.items():
@@ -518,7 +518,7 @@ root.title("Dosya Seçme Uygulaması")
 root.configure(bg="#C88EA7")
 yaziboyutu=("Arial",16)
 etiket = Label(root, text="LÜTFEN DOSYA SEÇİNİZ",font=yaziboyutu,fg="#643843",anchor='w')
-etiket.pack(pady=20)
+etiket.pack(pady=10)
 etiket.configure(bg="#C88EA7")
 
 pencere_genislik = 800
@@ -530,7 +530,7 @@ y_konumu = int((ekran_yukseklik - pencere_yukseklik) / 2)
 root.geometry(f"{pencere_genislik}x{pencere_yukseklik}+{x_konumu}+{y_konumu}")
 
 buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
-buton.pack(pady=10)
+buton.pack(pady=0)
 buton.configure(bg="#99627A")
 
 label1 = Label(root, text="Cümle Benzerliği Tresholdu:", fg="#643843")
@@ -547,7 +547,7 @@ entry2.pack(pady=0)
 
 
 label_sayiOzel = Label(root, text="",fg="#643843")
-label_sayiOzel.pack(pady=10)
+label_sayiOzel.pack(pady=5)
 label_sayiOzel.configure(bg="#C88EA7")
 
 #dropdown
@@ -557,7 +557,11 @@ secilenAlgoritma = StringVar(root)
 #Vord2vec varsayılan olarak ayarlandı
 secilenAlgoritma.set(algoritmalar[0])  
 dropdown = OptionMenu(root, secilenAlgoritma, *algoritmalar)
+dropdown.pack(pady=5)
+dropdown.config(font=("Arial", 8))
+dropdown.configure(font=5,foreground="#99627A",background="white")
 dropdown.pack()
+
 ########
 buton2 = Button(root, text="GRAF OLUŞTUR", command=lambda:( dosyaKontrol() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
 buton2.pack(pady=10)
