@@ -44,6 +44,8 @@ cumle_skor = 0
 cumle_benzerlik = 0
 p3 =0 
 cumleToplamSkor=[]
+cumleler = []
+ozet = []
 
 def dosya_bul():
     global flag
@@ -61,6 +63,9 @@ def dosya_bul():
         tdfOn.clear()
         tdf_skor.clear()
         cumleToplamSkor.clear()
+        ozet.clear()
+        cumleler.clear()
+
         if txt_kontrol(dosya_yolu):
             flag=True
             node_olustur(dosya_yolu)
@@ -76,11 +81,13 @@ def dosya_bul():
 #node oluşturma fonksiyonu
 def node_olustur(dosya_yolu):
     global flag
+    global cumleler
+
     with open(dosya_yolu, encoding="utf8") as dosya:
         dosya_icerigi = dosya.read()
         satirlar=dosya_icerigi.split('\n')
         baslik=satirlar[0].strip()
-        metin = '\n'.join(satirlar[1:]).strip()
+        metin = '\n'.join(satirlar[1:]).strip().replace('\n','')
         global cumleler
         cumleler = metin.split(".")
     
@@ -194,7 +201,7 @@ def word2vec(cumle):
     cumleSkorSon()
     node_attributes = {}
     for i, node in enumerate(G.nodes):
-        node_attributes[node] = {'size': 300, 'shape': 's', 'score': cumleToplamSkor[i]}
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': round(cumleToplamSkor[i], 3)}
 
     benzer_node_attributes = {}
     for i, node in enumerate(G.nodes):
@@ -287,7 +294,7 @@ def gloveDeneme(cumlelerSon):
     cumleSkorSon()
     node_attributes = {}
     for i, node in enumerate(G.nodes):
-        node_attributes[node] = {'size': 300, 'shape': 's', 'score': cumleToplamSkor[i]}
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': round(cumleToplamSkor[i], 3)}
 
     benzer_node_attributes = {}
     for i, node in enumerate(G.nodes):
@@ -323,10 +330,34 @@ def gloveDeneme(cumlelerSon):
     plt.axis('off') 
     plt.show()
 def cumleSkorSon():
+
+    global ozet
+    global ozet_metin
     for i in range(len(skor_ozel)):
-        sonSkor=(2*skor_ozel[i])+skor_numerik[i]+kelimesay[i]*2+tdf_skor[i]*3
+        sonSkor=(2*skor_ozel[i])+skor_numerik[i]+kelimesay[i]*2+tdf_skor[i]*3+p3*2
         cumleToplamSkor.append(sonSkor)
     print(cumleToplamSkor)
+
+    toplamSkor = []
+    count = 0
+
+    for x in cumleToplamSkor:
+        if x >= cumle_skor:
+            toplamSkor.append([x, count])
+        count += 1
+
+    print("eşik üstü \n",toplamSkor)
+
+    for i in toplamSkor:
+        ozet.append(cumleler[i[1]])
+
+    if(ozet_metin):
+        ozet_metin.destroy()
+    ozet_metin = Toplevel(root)
+    ozet_metin.title("ÖZET")
+    sonuc = Label(ozet_metin, text= '\n'.join(ozet))
+    sonuc.pack()
+
 def tresholdu_gecen_node(treshold_gecen, toplam_kenar):
     print(treshold_gecen, toplam_kenar)
     global p3
@@ -403,6 +434,8 @@ def numerikSayisi(cumle):
     return sayilar
 
 def dosyaKontrol():
+    cumleToplamSkor.clear()
+    ozet.clear()
     secim=secilenAlgoritma.get()
     if(secim=='Word2vec'):
         print(secim)
@@ -552,6 +585,7 @@ label5 = Label(root, text="Rouge Skoru f", fg="#643843")
 label5.configure(bg="#C88EA7")
 label5.pack(pady=3)
 
+ozet_metin = None
 root.mainloop()
 
 
