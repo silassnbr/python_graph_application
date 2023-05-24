@@ -38,14 +38,12 @@ skor_numerik=[]
 duzenlenmisCumleler=[]
 tdf_skor=[]
 tdfOn=[]
-baglantiBir=[]
-baglantiIki=[]
-benzerlik=[]
 global flag
 flag=False
 cumle_skor = 0
 cumle_benzerlik = 0
 p3 =0 
+cumleToplamSkor=[]
 
 def dosya_bul():
     global flag
@@ -62,8 +60,7 @@ def dosya_bul():
         kelimesay.clear()
         tdfOn.clear()
         tdf_skor.clear()
-        baglantiBir.clear()
-        baglantiIki.clear()
+        cumleToplamSkor.clear()
         if txt_kontrol(dosya_yolu):
             flag=True
             node_olustur(dosya_yolu)
@@ -98,30 +95,6 @@ def node_olustur(dosya_yolu):
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
     label_sayiOzel.config(text=f"Dosya Seçildi")
-def gpt_deneme(sentences):
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
-    model = GPT2Model.from_pretrained("gpt2-medium")
-
-   
-
-# Cümleleri GPT-3 ile kodlama
-    encoded_sentences = [tokenizer.encode(sentence, add_special_tokens=True, return_tensors="pt") for sentence in sentences]
-
-# Cümlelerin temsillerini alın
-    representations = []
-    with torch.no_grad():
-        for encoded_sentence in encoded_sentences:
-            representation = model(encoded_sentence)[0].squeeze()
-            representations.append(representation)
-
-# Kozinüs benzerliğini hesaplama
-    similarity_scores = cosine_similarity(representations)
-
-# Benzerlik skorlarını yazdır
-    for i in range(len(sentences)):
-        for j in range(i + 1, len(sentences)):
-            similarity_score = similarity_scores[i, j]
-            print(f"Benzerlik Skoru ({sentences[i]} - {sentences[j]}): {similarity_score}")
 def tdfKelimeSkor(duzenlenis,uzunluk):
     puan=0
     duzenlenis=duzenlenis.lower().split()
@@ -130,6 +103,8 @@ def tdfKelimeSkor(duzenlenis,uzunluk):
             puan=puan+1
     puan=round(float(puan/uzunluk),3)
     tdf_skor.append(puan)
+    print("tdf sayi")
+    print(len(tdf_skor))
 def tdfDegerBulma(duzenli,sayi):
   
     vectorizer = TfidfVectorizer()
@@ -216,9 +191,10 @@ def word2vec(cumle):
 
     tresholdu_gecen_node(treshold_gecen, toplam_kenar)
     scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
+    cumleSkorSon()
     node_attributes = {}
     for i, node in enumerate(G.nodes):
-        node_attributes[node] = {'size': 300, 'shape': 's', 'score': scores[i]}
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': cumleToplamSkor[i]}
 
     benzer_node_attributes = {}
     for i, node in enumerate(G.nodes):
@@ -245,7 +221,7 @@ def word2vec(cumle):
     # Skorları düğümlerin dışına yazdırın
     for node, attr in node_attributes.items():
         x, y = pos[node]
-        plt.text(x - 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
+        plt.text(x - 0.10, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
 
     for node, attr in benzer_node_attributes.items():
         x, y = pos[node]
@@ -308,10 +284,10 @@ def gloveDeneme(cumlelerSon):
             toplam_kenar += 1
 
     tresholdu_gecen_node(treshold_gecen, toplam_kenar)
-    scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
+    cumleSkorSon()
     node_attributes = {}
     for i, node in enumerate(G.nodes):
-        node_attributes[node] = {'size': 300, 'shape': 's', 'score': scores[i]}
+        node_attributes[node] = {'size': 300, 'shape': 's', 'score': cumleToplamSkor[i]}
 
     benzer_node_attributes = {}
     for i, node in enumerate(G.nodes):
@@ -338,7 +314,7 @@ def gloveDeneme(cumlelerSon):
     # Skorları düğümlerin dışına yazdırın
     for node, attr in node_attributes.items():
         x, y = pos[node]
-        plt.text(x - 0.05, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
+        plt.text(x - 0.10, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
 
     for node, attr in benzer_node_attributes.items():
         x, y = pos[node]
@@ -346,7 +322,11 @@ def gloveDeneme(cumlelerSon):
 
     plt.axis('off') 
     plt.show()
-
+def cumleSkorSon():
+    for i in range(len(skor_ozel)):
+        sonSkor=(2*skor_ozel[i])+skor_numerik[i]+kelimesay[i]*2+tdf_skor[i]*3
+        cumleToplamSkor.append(sonSkor)
+    print(cumleToplamSkor)
 def tresholdu_gecen_node(treshold_gecen, toplam_kenar):
     print(treshold_gecen, toplam_kenar)
     global p3
@@ -362,6 +342,8 @@ def baslikKelimeBul(cuumle,kelimeler,cumleUz):
             a += 1
     a=round(float(a/cumleUz),3)
     kelimesay.append(a)
+    print("kelime baslık")
+    print(len(kelimesay))
 def nltkAsdimlari(duzenle):
     stemmer = PorterStemmer() 
     
@@ -383,27 +365,15 @@ def nltkAsdimlari(duzenle):
     
     duzenlenmisCumleler.append(stemmed_sentence)
     
-def bertAlgoritmasi(duzenlenmis):
-    modelAdi = 'bert-base-uncased'
-    tokenizer = BertTokenizer.from_pretrained(modelAdi)
-    model = BertModel.from_pretrained(modelAdi)
-
-    input_ids = tokenizer.batch_encode_plus(duzenlenmis, add_special_tokens=True, padding=True, truncation=True, return_tensors='pt')
-    outputs = model(**input_ids)
-    last_hidden_states = outputs.last_hidden_state
-    pooled_output = outputs.pooler_output
-
-    similarity_scores = torch.cosine_similarity(pooled_output[0], pooled_output[1:], dim=0)
-    i=0
-    for i, score in enumerate(similarity_scores):
-        print("Cümle {}: {}".format(i+1, duzenlenmis[i]))
-        print("Benzerlik skoru: {:.4f}".format(score.item()))
-        print()
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
+    print("ozel skor")
+    print(len(skor_ozel))
     b=round(float(numer/cumle),3)
     skor_numerik.append(b)
+    print("numerik skor")
+    print(len(skor_numerik))
 def cumleUzunlugu(cumle):
     s=cumle.split()
     cumle_uz.append(len(s))
@@ -439,14 +409,14 @@ def dosyaKontrol():
         if (flag==True):
             for i in range(len(cumleler)-1):
                 baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
-            # bertAlgoritmasi(duzenlenmisCumleler)
             metin = " ".join(duzenlenmisCumleler)
             kelimesay=metin.split()
             sayisi=len(kelimesay)
-            word2vec(duzenlenmisCumleler)
             tdfDegerBulma(duzenlenmisCumleler,sayisi)
-            for i in range(len(duzenlenmisCumleler)-1):
+            for i in range(len(duzenlenmisCumleler)):
                 tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
+            word2vec(duzenlenmisCumleler)
+            
         
         else:
             messagebox.showinfo("UYARI","Dosya seçmediniz")
@@ -454,18 +424,15 @@ def dosyaKontrol():
         if (flag==True):
             for i in range(len(cumleler)-1):
                 baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
-            # bertAlgoritmasi(duzenlenmisCumleler)
+            
             metin = " ".join(duzenlenmisCumleler)
             kelimesay=metin.split()
             sayisi=len(kelimesay)
-            gloveDeneme(duzenlenmisCumleler) # Treshold gecen node sayısı hesaplanır (p3)
-            # gpt_deneme(duzenlenmisCumleler)
             tdfDegerBulma(duzenlenmisCumleler,sayisi)
-            for i in range(len(duzenlenmisCumleler)-1):
+            for i in range(len(duzenlenmisCumleler)):
                 tdfKelimeSkor(duzenlenmisCumleler[i],cumle_uz[i])
-        
-            # label_sayi.config(text=f"Numerik skor: {tdf_skor}")
-            # labelCumleUz.config(text=f"{tdf_skor}")    
+            gloveDeneme(duzenlenmisCumleler) 
+              
         else:
             messagebox.showinfo("UYARI","Dosya seçmediniz")
 
