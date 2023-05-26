@@ -153,20 +153,17 @@ def vectorKelime(word, model):
 def word2vec(cumle):
 
     model = KeyedVectors.load('vord2vec.bin')
-
     # model = Word2Vec.load('GoogleNews-vectors-negative300.bin')
-
-    vector_list = [vectorBul(sentence, model) for sentence in cumle]
-
+    vectorlerin_listesi = [vectorBul(sentence, model) for sentence in cumle]
     
-    similarity_matrix = cosine_similarity(vector_list)
+    benzerlik_matrixi_word2vec = cosine_similarity(vectorlerin_listesi)
 
 
     for i in range(len(cumle)):
         for j in range(i+1, len(cumle)):
             sentence1 = cumle[i]
             sentence2 = cumle[j]
-            similarity = similarity_matrix[i][j]
+            similarity = benzerlik_matrixi_word2vec[i][j]
             
     G = nx.Graph()
     toplam_kenar = 0
@@ -181,7 +178,7 @@ def word2vec(cumle):
 
         for j in range(i+1, len(cumle)):
             
-            similarity = similarity_matrix[i][j]
+            similarity = benzerlik_matrixi_word2vec[i][j]
             G.add_edge(i+1, j+1, weight=round(similarity,3))
 # benzerlik oranı thresholdu
             if similarity >= cumle_benzerlik:  
@@ -192,7 +189,6 @@ def word2vec(cumle):
             toplam_kenar += 1
 
     tresholdu_gecen_node(treshold_gecen, toplam_kenar)
-    scores = [0.8, 0.5, 0.6, 0.9,0.8,0.6]
     cumleSkorSon()
     node_attributes = {}
     for i, node in enumerate(G.nodes):
@@ -252,12 +248,12 @@ def gloveDeneme(cumlelerSon):
         sentence_vectors.append(sentence_vector)
 
 # Cümleler arası benzerlık hesabı
-    similarity_matrix = np.zeros((len(cumlelerSon), len(cumlelerSon)))
+    benzerlik_matrixi_glove = np.zeros((len(cumlelerSon), len(cumlelerSon)))
     for i in range(len(cumlelerSon)):
         for j in range(i+1, len(cumlelerSon)):
             similarity = cosine_similarity([sentence_vectors[i]], [sentence_vectors[j]])[0][0]
-            similarity_matrix[i][j] = similarity
-            similarity_matrix[j][i] = similarity
+            benzerlik_matrixi_glove[i][j] = similarity
+            benzerlik_matrixi_glove[j][i] = similarity
             
     G = nx.Graph()
     toplam_kenar = 0
@@ -272,7 +268,7 @@ def gloveDeneme(cumlelerSon):
 
         for j in range(i+1, len(cumlelerSon)):
             
-            similarity = similarity_matrix[i][j]
+            similarity = benzerlik_matrixi_glove[i][j]
             G.add_edge(i+1, j+1, weight=round(similarity,3))
 #threshold 
             if similarity >= cumle_benzerlik:  
