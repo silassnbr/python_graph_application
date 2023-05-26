@@ -28,6 +28,8 @@ import rouge_skor
 from transformers import GPT2Tokenizer, GPT2Model
 from gensim.models import Word2Vec
 from tkinter import *
+import uygulama as uyg
+
 # dosya seçme fonksiyonu 
 ozel_isimler = []
 sayilar=[]
@@ -71,11 +73,11 @@ def dosya_bul():
             node_olustur(dosya_yolu)
         else:
             flag=False
-            label_sayiOzel.config(text=f"Dosya Seçilemedi")
+            uyg.label_sayiOzel.config(text=f"Dosya Seçilemedi")
             messagebox.showinfo("UYARI","Lütfen txt formatında bir dosya seçiniz")
     else:
         flag=False
-        label_sayiOzel.config(text=f"Dosya Seçilemedi")
+        uyg.label_sayiOzel.config(text=f"Dosya Seçilemedi")
         messagebox.showinfo("UYARI","Dosya Seçilemedi")
 
 #node oluşturma fonksiyonu
@@ -101,7 +103,7 @@ def node_olustur(dosya_yolu):
 
     for i in range(len(cumleler)-1):
         nltkAsdimlari(cumleler[i])
-    label_sayiOzel.config(text=f"Dosya Seçildi")
+    uyg.label_sayiOzel.config(text=f"Dosya Seçildi")
 def tdfKelimeSkor(duzenlenis,uzunluk):
     puan=0
     duzenlenis=duzenlenis.lower().split()
@@ -320,7 +322,7 @@ def gloveDeneme(cumlelerSon):
 def cumleSkorSon():
 
     global ozet
-    global ozet_metin
+    ozet_metin = uyg.ozet_metin
     for i in range(len(skor_ozel)):
         sonSkor=(2*skor_ozel[i])+skor_numerik[i]+kelimesay[i]*2+tdf_skor[i]*3+p3*2
         cumleToplamSkor.append(sonSkor)
@@ -342,7 +344,7 @@ def cumleSkorSon():
     if(ozet_metin):
         ozet_metin.destroy()
 
-    ozet_metin = Toplevel(root)
+    ozet_metin = Toplevel(uyg.root)
     ozet_metin.title("ÖZET")
     sonuc = Text(ozet_metin,width=40, height=10)
     sonuc.pack(fill="both", expand=True)
@@ -422,7 +424,7 @@ def numerikSayisi(cumle):
 def dosyaKontrol():
     cumleToplamSkor.clear()
     ozet.clear()
-    secim=secilenAlgoritma.get()
+    secim=uyg.secilenAlgoritma.get()
     if(secim=='Word2vec'):
         if (flag==True):
             for i in range(len(cumleler)-1):
@@ -459,33 +461,33 @@ def treshold_degerleri():
     global cumle_benzerlik
     global cumle_skor
 
-    if entry1.get() == "" or entry2.get() == "":
+    if uyg.entry1.get() == "" or uyg.entry2.get() == "":
 
-        if(entry1.get() != ""):
-            cumle_benzerlik = float(entry1.get())
-        if(entry2.get() != ""):
-            cumle_skor = float(entry2.get())    
+        if(uyg.entry1.get() != ""):
+            cumle_benzerlik = float(uyg.entry1.get())
+        if(uyg.entry2.get() != ""):
+            cumle_skor = float(uyg.entry2.get())    
 
         messagebox.showinfo("UYARI","Treshold değerlerini giriniz")
         return False 
     
     else:    
-        cumle_benzerlik = float(entry1.get())
-        cumle_skor = float(entry2.get())
+        cumle_benzerlik = float(uyg.entry1.get())
+        cumle_skor = float(uyg.entry2.get())
         print("cumle_benzerlik 1:", cumle_benzerlik , "cumle_skor 2:", cumle_skor)
         return True
 def textAl():
     candidate_text=' '.join(ozet)
-    text = entry.get()  
+    text = uyg.entry.get()  
     print(text)
 
     if text is not None:
         
         r, r2, rl = rouge_skor.rouge_scores(candidate_text, text)
-        label_baslik.configure(text="\t r \t p \t f")
-        label3.configure(text=f"R-1 \t{round(r['r'], 2)}\t{round(r['p'], 2)}\t{round(r['f'], 2)}")
-        label4.configure(text=f"R-2 \t{round(r2['r'], 2)}\t{round(r2['p'], 2)}\t{round(r2['f'], 2)}")
-        label5.configure(text=f"R-L \t{round(rl['r'], 2)}\t{round(rl['p'], 2)}\t{round(rl['f'], 2)}")
+        uyg.label_baslik.configure(text="\t r \t p \t f")
+        uyg.label3.configure(text=f"R-1 \t{round(r['r'], 2)}\t{round(r['p'], 2)}\t{round(r['f'], 2)}")
+        uyg.label4.configure(text=f"R-2 \t{round(r2['r'], 2)}\t{round(r2['p'], 2)}\t{round(r2['f'], 2)}")
+        uyg.label5.configure(text=f"R-L \t{round(rl['r'], 2)}\t{round(rl['p'], 2)}\t{round(rl['f'], 2)}")
 
         SKOR= []
         r, p, f = rouge_skor.calculate_rouge_1(candidate_text, text)
@@ -498,81 +500,5 @@ def textAl():
         print(SKOR)
     else:
         messagebox.showinfo("UYARI","Lütfen kıyaslamak için metin giriniz!!!")
-
-root = Tk()
-root.title("Dosya Seçme Uygulaması")
-root.configure(bg="#C88EA7")
-yaziboyutu=("Arial",16)
-etiket = Label(root, text="LÜTFEN DOSYA SEÇİNİZ",font=yaziboyutu,fg="#643843",anchor='w')
-etiket.pack(pady=10)
-etiket.configure(bg="#C88EA7")
-
-pencere_genislik = 800
-pencere_yukseklik = 600
-ekran_genislik = root.winfo_screenwidth()
-ekran_yukseklik = root.winfo_screenheight()
-x_konumu = int((ekran_genislik - pencere_genislik) / 2)
-y_konumu = int((ekran_yukseklik - pencere_yukseklik) / 2)
-root.geometry(f"{pencere_genislik}x{pencere_yukseklik}+{x_konumu}+{y_konumu}")
-
-buton = Button(root, text="DOSYA SEÇ", command=dosya_bul,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
-buton.pack(pady=0)
-buton.configure(bg="#99627A")
-
-label1 = Label(root, text="Cümle Benzerliği Tresholdu:", fg="#643843")
-label1.configure(bg="#C88EA7")
-label1.pack(pady=15)
-entry1 = Entry(root)
-entry1.pack(pady=0)
-
-label2 = Label(root, text="Cümle Skoru Tresholdu:", fg="#643843")
-label2.configure(bg="#C88EA7")
-label2.pack(pady=15)
-entry2 = Entry(root)
-entry2.pack(pady=0)
-
-
-label_sayiOzel = Label(root, text="",fg="#643843")
-label_sayiOzel.pack(pady=5)
-label_sayiOzel.configure(bg="#C88EA7")
-
-#dropdown
-algoritmalar = ["Word2vec", "Glove"]
-
-secilenAlgoritma = StringVar(root)
-#Vord2vec varsayılan olarak ayarlandı
-secilenAlgoritma.set(algoritmalar[0])  
-dropdown = OptionMenu(root, secilenAlgoritma, *algoritmalar)
-dropdown.pack(pady=5)
-dropdown.config(font=("Arial", 8))
-dropdown.configure(font=5,foreground="#99627A",background="white")
-dropdown.pack()
-
-########
-buton2 = Button(root, text="GRAF OLUŞTUR", command=lambda:( dosyaKontrol() if treshold_degerleri() else None),border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
-buton2.pack(pady=10)
-buton2.configure(bg="#99627A")
-entry = Entry(root,width=80)
-entry.pack()
-buton3 = Button(root, text="Kıyasla", command=textAl,border=5,bd=0,padx=10,pady=5,relief="solid",anchor='ne')
-buton3.pack(pady=10)
-buton3.configure(bg="#99627A")
-
-label_baslik = Label(root, text=" ", fg="#643843")
-label_baslik.configure(bg="#C88EA7")
-label_baslik.pack(pady=3)
-label3 = Label(root, text="Rouge Skoru r", fg="#643843")
-label3.configure(bg="#C88EA7")
-label3.pack(pady=3)
-label4 = Label(root, text="Rouge Skoru p", fg="#643843")
-label4.configure(bg="#C88EA7")
-label4.pack(pady=3)
-label5 = Label(root, text="Rouge Skoru f", fg="#643843")
-label5.configure(bg="#C88EA7")
-label5.pack(pady=3)
-
-ozet_metin = None
-
-root.mainloop()
 
 
