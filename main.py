@@ -324,7 +324,7 @@ def cumleSkorSon():
     for i in range(len(skor_ozel)):
         sonSkor=(2*skor_ozel[i])+skor_numerik[i]+kelimesay[i]*2+tdf_skor[i]*3+p3*2
         cumleToplamSkor.append(sonSkor)
-    print(cumleToplamSkor)
+   
 
     toplamSkor = []
     count = 0
@@ -365,8 +365,6 @@ def baslikKelimeBul(cuumle,kelimeler,cumleUz):
             a += 1
     a=round(float(a/cumleUz),3)
     kelimesay.append(a)
-    print("kelime baslık")
-    print(len(kelimesay))
 def nltkAsdimlari(duzenle):
     stemmer = PorterStemmer() 
     
@@ -391,12 +389,8 @@ def nltkAsdimlari(duzenle):
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
     skor_ozel.append(a)
-    print("ozel skor")
-    print(len(skor_ozel))
     b=round(float(numer/cumle),3)
     skor_numerik.append(b)
-    print("numerik skor")
-    print(len(skor_numerik))
 def cumleUzunlugu(cumle):
     s=cumle.split()
     cumle_uz.append(len(s))
@@ -430,7 +424,6 @@ def dosyaKontrol():
     ozet.clear()
     secim=secilenAlgoritma.get()
     if(secim=='Word2vec'):
-        print(secim)
         if (flag==True):
             for i in range(len(cumleler)-1):
                 baslikKelimeBul(cumleler[i],basliktakiKelimeler,cumle_uz[i])
