@@ -353,10 +353,14 @@ def cumleSkorSon():
 
     if(ozet_metin):
         ozet_metin.destroy()
+
     ozet_metin = Toplevel(root)
     ozet_metin.title("ÖZET")
-    sonuc = Label(ozet_metin, text= '\n'.join(ozet))
-    sonuc.pack()
+    sonuc = Text(ozet_metin,width=40, height=10)
+    sonuc.pack(fill="both", expand=True)
+
+    sonuc.insert("end",'.'.join(ozet))
+    sonuc.configure(state="disabled")
 
 def tresholdu_gecen_node(treshold_gecen, toplam_kenar):
     print(treshold_gecen, toplam_kenar)
@@ -490,12 +494,18 @@ def treshold_degerleri():
         print("cumle_benzerlik 1:", cumle_benzerlik , "cumle_skor 2:", cumle_skor)
         return True
 def textAl():
-    candidate_text=' '.join(duzenlenmisCumleler)
+    candidate_text=' '.join(ozet)
     text = entry.get()  
     print(text)
+
     if text is not None:
-        rouge_skor.rouge_scores(candidate_text, text)
-    
+        
+        r, r2, rl = rouge_skor.rouge_scores(candidate_text, text)
+        label_baslik.configure(text="\t r \t p \t f")
+        label3.configure(text=f"R-1 \t{round(r['r'], 2)}\t{round(r['p'], 2)}\t{round(r['f'], 2)}")
+        label4.configure(text=f"R-2 \t{round(r2['r'], 2)}\t{round(r2['p'], 2)}\t{round(r2['f'], 2)}")
+        label5.configure(text=f"R-L \t{round(rl['r'], 2)}\t{round(rl['p'], 2)}\t{round(rl['f'], 2)}")
+
         SKOR= []
         r, p, f = rouge_skor.calculate_rouge_1(candidate_text, text)
         SKOR.append([r,p,f])
@@ -503,11 +513,6 @@ def textAl():
         SKOR.append([r,p,f])
         r, p, f = rouge_skor.calculate_rouge_l(candidate_text, text)
         SKOR.append([r,p,f])
-
-        label_baslik.configure(text="       r       p       f")
-        label3.configure(text=f"rouge-1 {SKOR[0]}")
-        label4.configure(text=f"rouge-2 {SKOR[1]}")
-        label5.configure(text=f"rouge-l {SKOR[2]}")
 
         print(SKOR)
     else:
@@ -586,6 +591,7 @@ label5.configure(bg="#C88EA7")
 label5.pack(pady=3)
 
 ozet_metin = None
+
 root.mainloop()
 
 
