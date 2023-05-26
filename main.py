@@ -123,20 +123,13 @@ def tdfDegerBulma(duzenli,sayi):
     buyukBulKelime=[]
 # Tdf degeri 0 dan buyuk olanalrı tut
     for i in range(num_documents):
-        # print(f"Metin Belgesi {i+1}:")
         feature_names = vectorizer.get_feature_names_out()
         for j in range(num_features):
             word =feature_names[j]
             tfidf = tfidf_matrix[i, j]
-            # print(f"Kelime: {word}, TF-IDF: {tfidf}")
             if(tfidf>0):
                 buyukBul.append(tfidf)
                 buyukBulKelime.append(word)
-        # print()
-    # for i in range(len(buyukBul)):
-        
-    #     print(f"{buyukBulKelime[i]}  --  {buyukBul[i]}")
-    # print("**********************************")
     sayi=int(sayi*10/100)
     en_buyuk_indeksler = np.argsort(buyukBul)[-sayi:]
     for i in range(len(en_buyuk_indeksler)):
@@ -172,7 +165,7 @@ def word2vec(cumle):
             sentence1 = cumle[i]
             sentence2 = cumle[j]
             similarity = similarity_matrix[i][j]
-            # print(f"Benzerlik ({sentence1}, {sentence2}): {similarity}")
+            
     G = nx.Graph()
     toplam_kenar = 0
     treshold_gecen = 0
@@ -188,8 +181,8 @@ def word2vec(cumle):
             
             similarity = similarity_matrix[i][j]
             G.add_edge(i+1, j+1, weight=round(similarity,3))
-
-            if similarity >= cumle_benzerlik:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
+# benzerlik oranı thresholdu
+            if similarity >= cumle_benzerlik:  
                 treshold_gecen += 1
                 benzer_node_adet[i] +=1
                 benzer_node_adet[j] +=1
@@ -207,7 +200,7 @@ def word2vec(cumle):
     for i, node in enumerate(G.nodes):
         benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
 
-    pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
+    pos = nx.circular_layout(G) 
     plt.figure(figsize=(15, 8),facecolor="#99627A") 
     edge_labels = nx.get_edge_attributes(G, "weight")
 
@@ -223,9 +216,7 @@ def word2vec(cumle):
         plt.text(edge_pos[0], edge_pos[1], label, ha='center', va='center', bbox=dict(facecolor=bgcolor, edgecolor=bgcolor), fontsize=10)
 
     nx.draw_networkx(G, pos, with_labels=True,node_color="#643843")
-   # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color=edge_label_colors )#bbox=dict(facecolor=box_color)
 
-    # Skorları düğümlerin dışına yazdırın
     for node, attr in node_attributes.items():
         x, y = pos[node]
         plt.text(x - 0.10, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
@@ -243,9 +234,8 @@ def gloveDeneme(cumlelerSon):
         
     sentence_vectors = []
     vectors=[]
-    # Her cümle için vektörleri hesaplayın ve listeye ekleyin
+   
     for sentence in cumlelerSon:
-    # Cümleyi kelimelere ayırın
         words = sentence.lower().split()
         for word in words:
             if word in glove_model.key_to_index:
@@ -266,7 +256,7 @@ def gloveDeneme(cumlelerSon):
             similarity = cosine_similarity([sentence_vectors[i]], [sentence_vectors[j]])[0][0]
             similarity_matrix[i][j] = similarity
             similarity_matrix[j][i] = similarity
-            # print(f"Benzerlik ({i+1} <-> {j+1}): {similarity}")
+            
     G = nx.Graph()
     toplam_kenar = 0
     treshold_gecen = 0
@@ -282,8 +272,8 @@ def gloveDeneme(cumlelerSon):
             
             similarity = similarity_matrix[i][j]
             G.add_edge(i+1, j+1, weight=round(similarity,3))
-
-            if similarity >= cumle_benzerlik:  # Eşik değeri belirleyerek sadece belirli bir benzerlik üzerindeki ilişkileri gösterebilirsiniz
+#threshold 
+            if similarity >= cumle_benzerlik:  
                 treshold_gecen += 1
                 benzer_node_adet[i] +=1
                 benzer_node_adet[j] +=1
@@ -300,7 +290,7 @@ def gloveDeneme(cumlelerSon):
     for i, node in enumerate(G.nodes):
         benzer_node_attributes[node] = {'size': 300, 'shape': 's', 'score': benzer_node_adet[i]}    
 
-    pos = nx.circular_layout(G) # Düğümleri konumlandırmak için bir düzen algoritması kullanabilirsiniz
+    pos = nx.circular_layout(G) 
     plt.figure(figsize=(15, 8),facecolor="#99627A") 
     edge_labels = nx.get_edge_attributes(G, "weight")
 
@@ -316,9 +306,7 @@ def gloveDeneme(cumlelerSon):
         plt.text(edge_pos[0], edge_pos[1], label, ha='center', va='center', bbox=dict(facecolor=bgcolor, edgecolor=bgcolor), fontsize=10)
 
     nx.draw_networkx(G, pos, with_labels=True,node_color="#643843")
-   # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color=edge_label_colors )#bbox=dict(facecolor=box_color)
-
-    # Skorları düğümlerin dışına yazdırın
+ 
     for node, attr in node_attributes.items():
         x, y = pos[node]
         plt.text(x - 0.10, y, attr['score'], ha='center', va='center',bbox=dict(facecolor="lightcoral", edgecolor="lightcoral"))
@@ -389,11 +377,11 @@ def nltkAsdimlari(duzenle):
     
     
     stop_words = set(stopwords.words("english"))  
-    stop_tokens = word_tokenize(punct_sentence)  # Cümleyi kelimelere ayırın
+    stop_tokens = word_tokenize(punct_sentence)  
     filtered_tokens = [token for token in stop_tokens if token.lower() not in stop_words]  
     filtered_sentence = ' '.join(filtered_tokens) 
 
-    # Her kelimeye stemming işlemi uygulayın
+    # stemming işlemi 
     duzenlenmis = sent_tokenize(filtered_sentence)
     stemmed_tokens = [stemmer.stem(token) for token in duzenlenmis]  
     stemmed_sentence = ' '.join(stemmed_tokens)
@@ -486,7 +474,7 @@ def treshold_degerleri():
             cumle_skor = float(entry2.get())    
 
         messagebox.showinfo("UYARI","Treshold değerlerini giriniz")
-        return False #False a çevrilecek
+        return False 
     
     else:    
         cumle_benzerlik = float(entry1.get())
