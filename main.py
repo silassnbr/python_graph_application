@@ -368,25 +368,25 @@ def baslikKelimeBul(cuumle,kelimeler,cumleUz):
     a=round(float(a/cumleUz),3)
     kelimesay.append(a)
 def nltkAsdimlari(duzenle):
-    stemmer = PorterStemmer() 
+    stemming = PorterStemmer() 
     
-    punctuation = string.punctuation
+    noktalama = string.punctuation
    
-    punct_sentence = ''.join(char for char in duzenle if char not in punctuation)
+    punct_sentence = ''.join(char for char in duzenle if char not in noktalama)
   
     
     
-    stop_words = set(stopwords.words("english"))  
+    stopWordler = set(stopwords.words("english"))  
     stop_tokens = word_tokenize(punct_sentence)  
-    filtered_tokens = [token for token in stop_tokens if token.lower() not in stop_words]  
+    filtered_tokens = [token for token in stop_tokens if token.lower() not in stopWordler]  
     filtered_sentence = ' '.join(filtered_tokens) 
 
     # stemming işlemi 
     duzenlenmis = sent_tokenize(filtered_sentence)
-    stemmed_tokens = [stemmer.stem(token) for token in duzenlenmis]  
-    stemmed_sentence = ' '.join(stemmed_tokens)
+    stemmedTokens = [stemming.stem(token) for token in duzenlenmis]  
+    stemmedCumle = ' '.join(stemmedTokens)
     
-    duzenlenmisCumleler.append(stemmed_sentence)
+    duzenlenmisCumleler.append(stemmedCumle)
     
 def skorDonustur(ozel,cumle,numer):
     a=round(float(ozel/cumle),3)
